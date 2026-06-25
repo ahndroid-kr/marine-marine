@@ -1,37 +1,50 @@
 const uiHeartImg = new Image();
 uiHeartImg.src = 'assets/images/ui_heart.png';
 
-const UI_BAR_H = 54;
-const HEART_SIZE = 36;
-const HEART_PAD = 6;
+const UI_BAR_H = 58;
+const HEART_SIZE = 38;
+const HEART_PAD = 5;
 
 function drawUI(ctx, canvas) {
   ctx.save();
 
-  // Semi-transparent top panel
-  ctx.fillStyle = 'rgba(0, 8, 22, 0.6)';
+  // Header background: deep navy gradient (darker at top)
+  const grad = ctx.createLinearGradient(0, 0, 0, UI_BAR_H);
+  grad.addColorStop(0,   'rgba(0,  6, 22, 0.92)');
+  grad.addColorStop(1,   'rgba(0, 18, 48, 0.72)');
+  ctx.fillStyle = grad;
   ctx.fillRect(0, 0, canvas.width, UI_BAR_H);
 
-  // Stage label (upper left)
+  // Bottom border: thin cyan line
+  ctx.strokeStyle = 'rgba(0, 229, 255, 0.55)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(0, UI_BAR_H - 0.75);
+  ctx.lineTo(canvas.width, UI_BAR_H - 0.75);
+  ctx.stroke();
+
+  // STAGE 1 (left)
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.font = 'bold 22px monospace';
-  ctx.fillStyle = '#7fd4ff';
-  ctx.shadowColor = '#00aaff';
-  ctx.shadowBlur = 10;
-  ctx.fillText('STAGE 1', 16, UI_BAR_H / 2);
+  ctx.font = 'bold 20px monospace';
+  ctx.fillStyle = '#00e5ff';
+  ctx.shadowColor = '#00e5ff';
+  ctx.shadowBlur = 12;
+  ctx.fillText('STAGE 1', 18, UI_BAR_H / 2);
 
-  // Hearts (upper right)
+  // Hearts (right)
   ctx.shadowBlur = 0;
   const heartY = (UI_BAR_H - HEART_SIZE) / 2;
   for (let i = 0; i < GS.lives; i++) {
-    const lx = canvas.width - 12 - (i + 1) * HEART_SIZE - i * HEART_PAD;
+    const lx = canvas.width - 14 - (i + 1) * HEART_SIZE - i * HEART_PAD;
     if (uiHeartImg.complete && uiHeartImg.naturalWidth > 0) {
       ctx.globalAlpha = 1;
       ctx.drawImage(uiHeartImg, lx, heartY, HEART_SIZE, HEART_SIZE);
     } else {
       ctx.save();
-      ctx.fillStyle = '#e05050';
+      ctx.fillStyle = '#ff4466';
+      ctx.shadowColor = '#ff2244';
+      ctx.shadowBlur = 8;
       ctx.beginPath();
       ctx.ellipse(lx + HEART_SIZE / 2, heartY + HEART_SIZE / 2, 14, 7, 0, 0, Math.PI * 2);
       ctx.fill();
