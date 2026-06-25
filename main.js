@@ -1,12 +1,21 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let player, bullets, enemies, frame;
+let player, bullets, enemies, items, pets, frame;
 const keys = {};
 
-// --- Background ---
+// --- Image assets ---
+const bgImg = new Image();
+bgImg.src = 'assets/images/bg_stage1.png';
+
+const plantImgs = Array.from({ length: 5 }, (_, i) => {
+  const img = new Image();
+  img.src = `assets/images/plant_0${i}.png`;
+  return img;
+});
+
+// --- Background bubbles ---
 const bgLayers = [];
-const rocks = [];
 
 function initBg() {
   bgLayers.length = 0;
@@ -15,9 +24,9 @@ function initBg() {
     { count: 14, speedMul: 0.65, minR: 3,   maxR: 7 },
   ];
   for (const d of defs) {
-    const items = [];
+    const bubbles = [];
     for (let i = 0; i < d.count; i++) {
-      items.push({
+      bubbles.push({
         x: Math.random() * canvas.width,
         y: Math.random() * canvas.height,
         r: Math.random() * (d.maxR - d.minR) + d.minR,
@@ -25,9 +34,23 @@ function initBg() {
         rise: Math.random() * 0.25 + 0.08,
       });
     }
-    bgLayers.push({ items, speedMul: d.speedMul });
+    bgLayers.push({ items: bubbles, speedMul: d.speedMul });
   }
 }
+
+function updateBg() {
+  for (const layer of bgLayers) {
+    for (const b of layer.items) {
+      b.x -= GS.scrollSpeed * layer.speedMul;
+      b.y -= b.rise;
+      if (b.x < -10) b.x = canvas.width + 10;
+      if (b.y < -10) b.y = canvas.height + 10;
+    }
+  }
+}
+
+// --- Seabed rocks ---
+const rocks = [];
 
 function initSeabed() {
   rocks.length = 0;
@@ -41,15 +64,7 @@ function initSeabed() {
   }
 }
 
-function updateBg() {
-  for (const layer of bgLayers) {
-    for (const b of layer.items) {
-      b.x -= GS.scrollSpeed * layer.speedMul;
-      b.y -= b.rise;
-      if (b.x < -10) b.x = canvas.width + 10;
-      if (b.y < -10) b.y = canvas.height + 10;
-    }
-  }
+function updateRocks() {
   for (const r of rocks) {
     r.x -= GS.scrollSpeed;
     if (r.x < -r.w - 10) {
@@ -60,27 +75,52 @@ function updateBg() {
   }
 }
 
-function drawBg() {
-  const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
-  g.addColorStop(0,   '#060e1c');
-  g.addColorStop(0.5, '#0a1e38');
-  g.addColorStop(1,   '#030810');
-  ctx.fillStyle = g;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+// --- Plants ---
+const plants = [];
 
-  // Light shafts
-  ctx.save();
-  ctx.globalAlpha = 0.03;
-  ctx.fillStyle = '#55bbff';
-  for (let i = 0; i < 5; i++) {
-    const bx = ((GS.scrollX * 0.12 + i * (canvas.width / 4.5)) % (canvas.width + 100)) - 50;
-    ctx.beginPath();
-    ctx.moveTo(bx, 0);
-    ctx.lineTo(bx - 45, canvas.height);
-    ctx.lineTo(bx + 45, canvas.height);
-    ctx.fill();
+function initPlants() {
+  plants.length = 0;
+  for (let i = 0; i < 10; i++) {
+    plants.push(makePlant(Math.random() * canvas.width));
   }
-  ctx.restore();
+}
+
+function makePlant(x) {
+  return {
+    x,
+    imgIdx: Math.floor(Math.random() * 5),
+    scale: 0.35 + Math.random() * 0.45,
+  };
+}
+
+function updatePlants() {
+  for (const p of plants) {
+    p.x -= GS.scrollSpeed * 0.85;
+    if (p.x < -80) {
+      p.x = canvas.width + 40 + Math.random() * 150;
+      p.imgIdx = Math.floor(Math.random() * 5);
+      p.scale = 0.35 + Math.random() * 0.45;
+    }
+  }
+}
+
+// --- Draw background ---
+function drawBg() {
+  if (bgImg.complete && bgImg.naturalWidth > 0) {
+    const scale = canvas.height / bgImg.naturalHeight;
+    const iw = bgImg.naturalWidth * scale;
+    const offset = -(GS.scrollX * 0.3) % iw;
+    for (let x = offset; x < canvas.width + iw; x += iw) {
+      ctx.drawImage(bgImg, x, 0, iw, canvas.height);
+    }
+  } else {
+    const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    g.addColorStop(0,   '#060e1c');
+    g.addColorStop(0.5, '#0a1e38');
+    g.addColorStop(1,   '#030810');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
 
   // Bubbles
   for (const layer of bgLayers) {
@@ -95,8 +135,17 @@ function drawBg() {
     ctx.restore();
   }
 
-  // Seabed strip
+  // Plants (drawn before seabed so bases are hidden)
   const sbY = canvas.height - 22;
+  for (const p of plants) {
+    const img = plantImgs[p.imgIdx];
+    if (!img.complete || !img.naturalWidth) continue;
+    const w = 128 * p.scale;
+    const h = 128 * p.scale;
+    ctx.drawImage(img, p.x - w / 2, sbY - h + 18, w, h);
+  }
+
+  // Seabed strip
   const sbG = ctx.createLinearGradient(0, sbY, 0, canvas.height);
   sbG.addColorStop(0, '#0a1a10');
   sbG.addColorStop(1, '#050c08');
@@ -112,34 +161,97 @@ function drawBg() {
   }
 }
 
-// --- Collision (AABB with slight shrink) ---
+// --- Collision (AABB center-based, 80% of image size) ---
 function overlap(a, b) {
   return (
-    Math.abs(a.x - b.x) < (a.w + b.w) / 2 - 6 &&
-    Math.abs(a.y - b.y) < (a.h + b.h) / 2 - 6
+    Math.abs(a.x - b.x) < (a.w + b.w) * 0.4 &&
+    Math.abs(a.y - b.y) < (a.h + b.h) * 0.4
   );
 }
 
-// --- Init ---
+// --- Item drop ---
+function rollDrop(x, y) {
+  const r = Math.random();
+  if (r < 0.15) return new Item(x, y, 'red');
+  if (r < 0.25) return new Item(x, y, 'blue');
+  if (r < 0.33) return new Item(x, y, 'pink');
+  if (r < 0.38) return new Item(x, y, 'green');
+  if (r < 0.50) return new Item(x, y, 'yellow');
+  return null;
+}
+
+function applyItem(type, px, py) {
+  switch (type) {
+    case 'red':
+      if (GS.powerLevel < 3) GS.powerLevel++;
+      else GS.score += 500;
+      break;
+    case 'blue':
+      if (GS.shield < 2) GS.shield++;
+      else GS.score += 300;
+      break;
+    case 'pink':
+      if (GS.petCount < 2) {
+        pets.push(new Pet(GS.petCount, px, py));
+        GS.petCount++;
+      } else {
+        GS.score += 200;
+      }
+      break;
+    case 'green':
+      if (GS.invincible > 0) GS.score += 400;
+      GS.invincible = 300;
+      GS.giant = true;
+      break;
+    case 'yellow':
+      GS.score += 1000;
+      break;
+    case 'life':
+      GS.lives = Math.min(GS.lives + 1, 5);
+      break;
+  }
+}
+
+// --- Resize ---
 function resize() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
   if (player) player.clamp();
 }
 
+let resizeTimer = null;
+function onResize() {
+  resize();
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    initBg();
+    initSeabed();
+    initPlants();
+  }, 150);
+}
+
+// --- Init ---
 function init() {
   resize();
-  player  = new Player(canvas);
-  bullets = [];
-  enemies = [];
-  frame   = 0;
-  GS.score   = 0;
-  GS.lives   = 3;
-  GS.phase   = 'playing';
-  GS.scrollX = 0;
+  player      = new Player(canvas);
+  bullets     = [];
+  enemies     = [];
+  items       = [];
+  pets        = [];
+  frame       = 0;
+  GS.score      = 0;
+  GS.lives      = 3;
+  GS.phase      = 'playing';
+  GS.scrollX    = 0;
+  GS.powerLevel = 0;
+  GS.shield     = 0;
+  GS.petCount   = 0;
+  GS.invincible = 0;
+  GS.giant      = false;
   stage1.init();
   initBg();
   initSeabed();
+  initPlants();
 }
 
 // --- Update ---
@@ -149,17 +261,37 @@ function update() {
   frame++;
   GS.scrollX += GS.scrollSpeed;
   updateBg();
+  updateRocks();
+  updatePlants();
 
-  // Keyboard nudge
+  // Invincibility countdown
+  if (GS.invincible > 0) {
+    GS.invincible--;
+    if (GS.invincible === 0) GS.giant = false;
+  }
+
   const ks = 5;
   if (keys['ArrowUp']    || keys['w'] || keys['W']) player.targetY -= ks;
   if (keys['ArrowDown']  || keys['s'] || keys['S']) player.targetY += ks;
   if (keys['ArrowLeft']  || keys['a'] || keys['A']) player.targetX -= ks;
   if (keys['ArrowRight'] || keys['d'] || keys['D']) player.targetX += ks;
 
+  // Player fire
   const fired = player.update();
   if (fired) {
-    bullets.push(new Bullet(player.x + player.w / 2, player.y, 10, 0, true));
+    for (const cfg of fired) {
+      bullets.push(new Bullet(player.x + player.w / 2, player.y, cfg.vx, cfg.vy, true));
+    }
+  }
+
+  // Pet update and fire
+  for (const p of pets) {
+    const petFired = p.update(player);
+    if (petFired) {
+      for (const cfg of petFired) {
+        bullets.push(new Bullet(p.x + p.w / 2, p.y, cfg.vx, cfg.vy, true));
+      }
+    }
   }
 
   stage1.update(frame, canvas, enemies);
@@ -170,30 +302,53 @@ function update() {
   for (const e of enemies) e.update();
   enemies = enemies.filter(e => !e.dead);
 
+  for (const item of items) item.update();
+  items = items.filter(item => !item.dead);
+
   // Bullets vs enemies
   for (const b of bullets) {
     if (!b.fromPlayer) continue;
     for (const e of enemies) {
-      if (b.dead || e.dead) continue;
+      if (b.dead || e.dead || e.dying) continue;
       if (overlap(b, e)) {
         b.dead = true;
+        if (e.onHit) e.onHit();
         e.hp--;
-        if (e.hp <= 0) { e.dead = true; GS.score += e.scoreValue; }
+        if (e.hp <= 0) {
+          GS.score += e.scoreValue;
+          if (e.onDeath) e.onDeath();
+          else e.dead = true;
+          if (e.dropLife) {
+            items.push(new Item(e.x, e.y, 'life'));
+          } else {
+            const drop = rollDrop(e.x, e.y);
+            if (drop) items.push(drop);
+          }
+        }
       }
     }
   }
 
-  // Enemies vs player (with invincibility frames)
-  if (player.hitTimer === 0) {
+  // Enemies vs player (skipped while invincible)
+  if (GS.invincible === 0 && player.hitTimer === 0) {
     for (const e of enemies) {
-      if (e.dead) continue;
+      if (e.dead || e.dying) continue;
       if (overlap(e, player)) {
         e.dead = true;
-        GS.lives--;
-        player.hit();
-        if (GS.lives <= 0) GS.phase = 'gameover';
+        if (player.hit()) {
+          if (GS.lives <= 0) GS.phase = 'gameover';
+        }
         break;
       }
+    }
+  }
+
+  // Items vs player
+  for (const item of items) {
+    if (item.dead) continue;
+    if (overlap(item, player)) {
+      item.dead = true;
+      applyItem(item.type, player.x, player.y);
     }
   }
 }
@@ -201,8 +356,10 @@ function update() {
 // --- Draw ---
 function draw() {
   drawBg();
+  items.forEach(item => item.draw(ctx));
   enemies.forEach(e => e.draw(ctx));
   bullets.forEach(b => b.draw(ctx));
+  pets.forEach(p => p.draw(ctx));
   player.draw(ctx);
   drawUI(ctx, canvas);
   if (GS.phase === 'gameover') drawGameOver(ctx, canvas);
@@ -248,7 +405,7 @@ window.addEventListener('keydown', e => {
 });
 window.addEventListener('keyup', e => { keys[e.key] = false; });
 
-window.addEventListener('resize', () => { resize(); initBg(); initSeabed(); });
+window.addEventListener('resize', onResize);
 
 // --- Start ---
 init();

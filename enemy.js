@@ -1,19 +1,37 @@
+const enemyImgs = {};
+['squid', 'shrimp', 'hairtail'].forEach(t => {
+  enemyImgs[t] = new Image();
+  enemyImgs[t].src = `assets/images/enemy_${t}.png`;
+});
+
+const ENEMY_DEFS = {
+  squid:    { w: 48, h: 48, hp: 1, score: 100 },
+  shrimp:   { w: 52, h: 40, hp: 1, score: 100 },
+  hairtail: { w: 160, h: 80, hp: 2, score: 200 },
+};
+
 class Enemy {
-  constructor(canvas) {
+  constructor(canvas, type) {
+    const t = type || ['squid', 'shrimp', 'hairtail'][Math.floor(Math.random() * 3)];
+    const def = ENEMY_DEFS[t];
     this.canvas = canvas;
-    this.x = canvas.width + 65;
+    this.type = t;
+    this.x = canvas.width + def.w;
     this.y = 60 + Math.random() * (canvas.height - 130);
     const speedMult = Math.min(1 + GS.score / 3000, 2.5);
     this.vx = -(Math.random() * 1.5 + 1.5) * speedMult;
-    this.w = 55;
-    this.h = 22;
-    this.hp = 1;
-    this.scoreValue = 100;
+    this.w = def.w;
+    this.h = def.h;
+    this.hp = def.hp;
+    this.scoreValue = def.score;
     this.dead = false;
+    this.dying = false;
     this.t = Math.random() * Math.PI * 2;
-    const hue = [0, 20, 170, 200, 280][Math.floor(Math.random() * 5)];
-    this.bodyColor = `hsl(${hue}, 65%, 45%)`;
-    this.finColor = `hsl(${hue}, 50%, 32%)`;
+    this.hitFlash = 0;
+  }
+
+  onHit() {
+    this.hitFlash = 4;
   }
 
   update() {
@@ -22,66 +40,19 @@ class Enemy {
     this.y += Math.sin(this.t) * 0.5;
     this.y = Math.max(40, Math.min(this.canvas.height - 50, this.y));
     if (this.x < -120) this.dead = true;
+    if (this.hitFlash > 0) this.hitFlash--;
   }
 
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
-
-    const hw = this.w / 2;
-    const hh = this.h / 2;
-
-    // Tail fin (right — trailing as fish moves left)
-    ctx.beginPath();
-    ctx.moveTo(hw, 0);
-    ctx.lineTo(hw + 14, -hh - 4);
-    ctx.lineTo(hw + 14, hh + 4);
-    ctx.closePath();
-    ctx.fillStyle = this.finColor;
-    ctx.fill();
-
-    // Body ellipse
-    ctx.beginPath();
-    ctx.ellipse(0, 0, hw, hh, 0, 0, Math.PI * 2);
-    ctx.fillStyle = this.bodyColor;
-    ctx.fill();
-
-    // Dorsal fin
-    ctx.beginPath();
-    ctx.moveTo(hw * 0.15, -hh);
-    ctx.lineTo(hw * 0.5, -hh - 10);
-    ctx.lineTo(hw * 0.85, -hh);
-    ctx.closePath();
-    ctx.fillStyle = this.finColor;
-    ctx.fill();
-
-    // Pectoral fin
-    ctx.beginPath();
-    ctx.moveTo(hw * 0.1, 0);
-    ctx.lineTo(hw * 0.35, hh + 8);
-    ctx.lineTo(hw * 0.65, 0);
-    ctx.closePath();
-    ctx.fillStyle = this.finColor;
-    ctx.fill();
-
-    // Eye (left/head side)
-    ctx.beginPath();
-    ctx.arc(-hw + 11, -1, 4, 0, Math.PI * 2);
-    ctx.fillStyle = '#fff';
-    ctx.fill();
-    ctx.beginPath();
-    ctx.arc(-hw + 12, -1, 2, 0, Math.PI * 2);
-    ctx.fillStyle = '#111';
-    ctx.fill();
-
-    // Body highlight stripe
-    ctx.beginPath();
-    ctx.moveTo(-hw * 0.3, -hh + 3);
-    ctx.lineTo(-hw * 0.35, hh - 3);
-    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-    ctx.lineWidth = 3.5;
-    ctx.stroke();
-
+    if (this.hitFlash > 0) {
+      ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    }
+    const img = enemyImgs[this.type];
+    if (img && img.complete && img.naturalWidth > 0) {
+      ctx.drawImage(img, -this.w / 2, -this.h / 2, this.w, this.h);
+    }
     ctx.restore();
   }
 }
