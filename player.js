@@ -98,13 +98,12 @@ class Player {
 
       const pulse = 0.5 + 0.5 * Math.sin(performance.now() * (Math.PI * 2 / 1500));
       const isDouble = GS.shield >= 2;
-      const col = isDouble ? '#e040fb' : '#00e5ff';
-      const glowMult = isDouble ? 1.7 : 1.0;
+      const coreCol  = isDouble ? '#fffde7' : '#ffffff';
+      const glowCol  = isDouble ? '#fff9c4' : '#ffffff';
 
       const rx0 = drawW / 2 + 20;
       const ry0 = drawH / 2 + 20;
 
-      // flat-top hexagon path
       const hexPath = (rx, ry) => {
         ctx.beginPath();
         for (let i = 0; i < 6; i++) {
@@ -115,33 +114,42 @@ class Player {
         ctx.closePath();
       };
 
-      const drawShieldLayer = (rx, ry) => {
-        // semi-transparent inner fill
-        ctx.globalAlpha = 0.15 + 0.08 * pulse;
-        ctx.fillStyle = col;
-        ctx.shadowBlur = 0;
+      const drawShieldLayer = (rx, ry, glowBoost) => {
+        // outermost wide blur — aura spreading inward
+        ctx.globalAlpha = (0.18 + 0.12 * pulse) * glowBoost;
+        ctx.strokeStyle = glowCol;
+        ctx.shadowColor = glowCol;
+        ctx.lineWidth = 22;
+        ctx.shadowBlur = 40 + 20 * pulse;
         hexPath(rx, ry);
-        ctx.fill();
+        ctx.stroke();
 
-        // thick outer glow stroke
-        ctx.globalAlpha = 0.40 + 0.28 * pulse;
-        ctx.strokeStyle = col;
-        ctx.shadowColor = col;
+        // mid glow halo
+        ctx.globalAlpha = (0.35 + 0.20 * pulse) * glowBoost;
         ctx.lineWidth = 10;
-        ctx.shadowBlur = (26 + 16 * pulse) * glowMult;
+        ctx.shadowBlur = 24 + 12 * pulse;
         hexPath(rx, ry);
         ctx.stroke();
 
         // bright core edge
-        ctx.globalAlpha = 0.82 + 0.18 * pulse;
+        ctx.globalAlpha = 0.80 + 0.20 * pulse;
+        ctx.strokeStyle = coreCol;
+        ctx.shadowColor = coreCol;
         ctx.lineWidth = 2;
-        ctx.shadowBlur = 14 * glowMult;
+        ctx.shadowBlur = 16 + 8 * pulse;
         hexPath(rx, ry);
         ctx.stroke();
+
+        // near-invisible inner fill
+        ctx.globalAlpha = 0.05 + 0.05 * pulse;
+        ctx.fillStyle = coreCol;
+        ctx.shadowBlur = 0;
+        hexPath(rx, ry);
+        ctx.fill();
       };
 
-      if (isDouble) drawShieldLayer(rx0 + 18, ry0 + 18);
-      drawShieldLayer(rx0, ry0);
+      if (isDouble) drawShieldLayer(rx0 + 18, ry0 + 18, 1.3);
+      drawShieldLayer(rx0, ry0, 1.0);
 
       ctx.restore();
     }
