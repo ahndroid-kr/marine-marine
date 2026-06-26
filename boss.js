@@ -21,7 +21,7 @@ class MidbossRay {
     this.dead = false;
     this.dying = false;
     this.scoreValue = 3000;
-    this.dropLife = true;
+    this.dropLife = false;
     this.vx = -0.9;
     this.t = 0;
     this.hitFlash = 0;

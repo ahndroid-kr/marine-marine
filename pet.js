@@ -17,7 +17,7 @@ class Pet {
     switch (GS.powerLevel) {
       case 1:  return [{ vx: 9, vy: -2 }, { vx: 9, vy: 2 }];
       case 2:  return [{ vx: 9, vy: -3 }, { vx: 10, vy: 0 }, { vx: 9, vy: 3 }];
-      case 3:  return [{ vx: 9, vy: -3 }, { vx: 10, vy: 0 }, { vx: 9, vy: 3 }, { vx: -7, vy: 0 }];
+      case 3:  return [{ vx: 9, vy: -3 }, { vx: 10, vy: 0 }, { vx: 9, vy: 3 }];
       default: return [{ vx: 10, vy: 0 }];
     }
   }
