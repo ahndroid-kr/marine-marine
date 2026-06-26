@@ -172,11 +172,11 @@ function overlap(a, b) {
 // --- Item drop ---
 function rollDrop(x, y) {
   const r = Math.random();
-  if (r < 0.15) return new Item(x, y, 'red');
-  if (r < 0.25) return new Item(x, y, 'blue');
-  if (r < 0.33) return new Item(x, y, 'pink');
-  if (r < 0.38) return new Item(x, y, 'green');
-  if (r < 0.50) return new Item(x, y, 'yellow');
+  if (r < 0.070) return new Item(x, y, 'red');
+  if (r < 0.120) return new Item(x, y, 'blue');
+  if (r < 0.160) return new Item(x, y, 'pink');
+  if (r < 0.185) return new Item(x, y, 'green');
+  if (r < 0.245) return new Item(x, y, 'yellow');
   return null;
 }
 

@@ -19,7 +19,8 @@ class Enemy {
     this.x = canvas.width + def.w;
     this.y = 60 + Math.random() * (canvas.height - 130);
     const speedMult = Math.min(1 + GS.score / 3000, 2.5);
-    this.vx = -(Math.random() * 1.5 + 1.5) * speedMult;
+    const baseMult = t === 'hairtail' ? 1.0 : 0.65;
+    this.vx = -(Math.random() * 1.5 + 1.5) * speedMult * baseMult;
     this.w = def.w;
     this.h = def.h;
     this.hp = def.hp;
