@@ -94,15 +94,39 @@ class Player {
     ctx.drawImage(playerImg, -drawW / 2, -drawH / 2, drawW, drawH);
 
     if (GS.shield > 0) {
-      ctx.globalAlpha = 0.7;
-      const color = GS.shield >= 2 ? '#00ffff' : '#4488ff';
-      ctx.strokeStyle = color;
-      ctx.lineWidth = GS.shield >= 2 ? 3 : 2;
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 14;
-      ctx.beginPath();
-      ctx.ellipse(0, 0, drawW / 2 + 10, drawH / 2 + 8, 0, 0, Math.PI * 2);
-      ctx.stroke();
+      const t = performance.now() / 800;
+      const pulse = 0.5 + 0.5 * Math.sin(t * 2.5);
+
+      const drawRing = (rx, ry, color) => {
+        ctx.strokeStyle = color;
+        ctx.shadowColor = color;
+
+        ctx.globalAlpha = 0.10 + 0.08 * pulse;
+        ctx.lineWidth = 14;
+        ctx.shadowBlur = 32;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.globalAlpha = 0.40 + 0.20 * pulse;
+        ctx.lineWidth = 4;
+        ctx.shadowBlur = 18;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+
+        ctx.globalAlpha = 0.90;
+        ctx.lineWidth = 1.5;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        ctx.stroke();
+      };
+
+      drawRing(drawW / 2 + 14, drawH / 2 + 12, '#3399ff');
+      if (GS.shield >= 2) {
+        drawRing(drawW / 2 + 28, drawH / 2 + 26, '#00ffff');
+      }
     }
 
     ctx.restore();

@@ -14,8 +14,8 @@ class MidbossRay {
     this.canvas = canvas;
     this.x = canvas.width + 80;
     this.y = canvas.height / 2;
-    this.w = 112;
-    this.h = 112;
+    this.w = 160;
+    this.h = 160;
     this.maxHp = 30;
     this.hp = 30;
     this.dead = false;
@@ -51,7 +51,7 @@ class MidbossRay {
     ctx.save();
     ctx.translate(this.x, this.y);
     if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
-    ctx.drawImage(midbossRayImg, -56, -56, 112, 112);
+    ctx.drawImage(midbossRayImg, -80, -80, 160, 160);
     ctx.globalAlpha = 1;
     for (const e of this.hitEffects) {
       ctx.save();
@@ -61,9 +61,9 @@ class MidbossRay {
     }
     const barW = 100, barH = 7;
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(-barW / 2 - 1, 60, barW + 2, barH + 2);
+    ctx.fillRect(-barW / 2 - 1, 88, barW + 2, barH + 2);
     ctx.fillStyle = '#ff9900';
-    ctx.fillRect(-barW / 2, 61, barW * (this.hp / this.maxHp), barH);
+    ctx.fillRect(-barW / 2, 89, barW * (this.hp / this.maxHp), barH);
     ctx.restore();
   }
 }
