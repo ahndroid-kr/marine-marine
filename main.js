@@ -1,10 +1,10 @@
 const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+const ctx    = canvas.getContext('2d');
 
 let player, bullets, enemies, items, pets, frame;
 const keys = {};
 
-// --- Image assets ---
+// ─── Image assets ─────────────────────────────────────────────────────────────
 const bgImg = new Image();
 bgImg.src = 'assets/images/bg_stage1.png';
 
@@ -14,24 +14,25 @@ const plantImgs = Array.from({ length: 5 }, (_, i) => {
   return img;
 });
 
-// --- Background bubbles ---
+// ─── Background bubbles ───────────────────────────────────────────────────────
 const bgLayers = [];
 
 function initBg() {
   bgLayers.length = 0;
+  const sc = canvas.height / 600;
   const defs = [
-    { count: 22, speedMul: 0.25, minR: 1.5, maxR: 4 },
-    { count: 14, speedMul: 0.65, minR: 3,   maxR: 7 },
+    { count: 22, speedMul: 0.25, minR: 1.5 * sc, maxR: 4 * sc },
+    { count: 14, speedMul: 0.65, minR: 3   * sc, maxR: 7 * sc },
   ];
   for (const d of defs) {
     const bubbles = [];
     for (let i = 0; i < d.count; i++) {
       bubbles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * (d.maxR - d.minR) + d.minR,
+        x:     Math.random() * canvas.width,
+        y:     Math.random() * canvas.height,
+        r:     Math.random() * (d.maxR - d.minR) + d.minR,
         alpha: Math.random() * 0.25 + 0.05,
-        rise: Math.random() * 0.25 + 0.08,
+        rise:  (Math.random() * 0.25 + 0.08) * sc,
       });
     }
     bgLayers.push({ items: bubbles, speedMul: d.speedMul });
@@ -49,48 +50,44 @@ function updateBg() {
   }
 }
 
-// --- Seabed rocks ---
+// ─── Seabed rocks ─────────────────────────────────────────────────────────────
 const rocks = [];
 
 function initSeabed() {
   rocks.length = 0;
+  const sc = canvas.height / 600;
   for (let i = 0; i < 16; i++) {
     rocks.push({
-      x: Math.random() * canvas.width * 1.6,
-      w: Math.random() * 32 + 12,
-      h: Math.random() * 18 + 8,
+      x:    Math.random() * canvas.width * 1.6,
+      w:    (Math.random() * 32 + 12) * sc,
+      h:    (Math.random() * 18 +  8) * sc,
       dark: Math.random() > 0.5,
     });
   }
 }
 
 function updateRocks() {
+  const sc = canvas.height / 600;
   for (const r of rocks) {
     r.x -= GS.scrollSpeed;
     if (r.x < -r.w - 10) {
       r.x = canvas.width + r.w + Math.random() * 80;
-      r.w = Math.random() * 32 + 12;
-      r.h = Math.random() * 18 + 8;
+      r.w = (Math.random() * 32 + 12) * sc;
+      r.h = (Math.random() * 18 +  8) * sc;
     }
   }
 }
 
-// --- Plants ---
+// ─── Plants ───────────────────────────────────────────────────────────────────
 const plants = [];
 
 function initPlants() {
   plants.length = 0;
-  for (let i = 0; i < 10; i++) {
-    plants.push(makePlant(Math.random() * canvas.width));
-  }
+  for (let i = 0; i < 10; i++) plants.push(makePlant(Math.random() * canvas.width));
 }
 
 function makePlant(x) {
-  return {
-    x,
-    imgIdx: Math.floor(Math.random() * 5),
-    scale: 0.35 + Math.random() * 0.45,
-  };
+  return { x, imgIdx: Math.floor(Math.random() * 5), scale: 0.35 + Math.random() * 0.45 };
 }
 
 function updatePlants() {
@@ -99,16 +96,16 @@ function updatePlants() {
     if (p.x < -80) {
       p.x = canvas.width + 40 + Math.random() * 150;
       p.imgIdx = Math.floor(Math.random() * 5);
-      p.scale = 0.35 + Math.random() * 0.45;
+      p.scale  = 0.35 + Math.random() * 0.45;
     }
   }
 }
 
-// --- Draw background ---
+// ─── Draw background ──────────────────────────────────────────────────────────
 function drawBg() {
   if (bgImg.complete && bgImg.naturalWidth > 0) {
-    const scale = canvas.height / bgImg.naturalHeight;
-    const iw = bgImg.naturalWidth * scale;
+    const scale  = canvas.height / bgImg.naturalHeight;
+    const iw     = bgImg.naturalWidth * scale;
     const offset = -(GS.scrollX * 0.3) % iw;
     for (let x = offset; x < canvas.width + iw; x += iw) {
       ctx.drawImage(bgImg, x, 0, iw, canvas.height);
@@ -135,14 +132,18 @@ function drawBg() {
     ctx.restore();
   }
 
-  // Plants (drawn before seabed so bases are hidden)
-  const sbY = canvas.height - 22;
+  // Seabed
+  const SB_H = Math.round(canvas.height * 0.035);
+  const sbY  = canvas.height - SB_H;
+
+  // Plants (drawn before seabed strip so bases are hidden)
+  const baseSize = canvas.height * 0.22;
   for (const p of plants) {
     const img = plantImgs[p.imgIdx];
     if (!img.complete || !img.naturalWidth) continue;
-    const w = 128 * p.scale;
-    const h = 128 * p.scale;
-    ctx.drawImage(img, p.x - w / 2, sbY - h + 18, w, h);
+    const w = baseSize * p.scale;
+    const h = baseSize * p.scale;
+    ctx.drawImage(img, p.x - w / 2, sbY - h + SB_H * 0.7, w, h);
   }
 
   // Seabed strip
@@ -150,7 +151,7 @@ function drawBg() {
   sbG.addColorStop(0, '#0a1a10');
   sbG.addColorStop(1, '#050c08');
   ctx.fillStyle = sbG;
-  ctx.fillRect(0, sbY, canvas.width, canvas.height - sbY);
+  ctx.fillRect(0, sbY, canvas.width, SB_H);
 
   // Rocks
   for (const r of rocks) {
@@ -161,7 +162,7 @@ function drawBg() {
   }
 }
 
-// --- Collision (AABB center-based, 80% of image size) ---
+// ─── Collision (AABB centre-based, 80% of size) ───────────────────────────────
 function overlap(a, b) {
   return (
     Math.abs(a.x - b.x) < (a.w + b.w) * 0.4 &&
@@ -169,7 +170,7 @@ function overlap(a, b) {
   );
 }
 
-// --- Item drop ---
+// ─── Item drop ────────────────────────────────────────────────────────────────
 function rollDrop(x, y) {
   const r = Math.random();
   if (r < 0.060) return new Item(x, y, 'red');
@@ -192,27 +193,21 @@ function applyItem(type, px, py) {
       break;
     case 'pink':
       if (GS.petCount < 2) {
-        pets.push(new Pet(GS.petCount, px, py));
+        pets.push(new Pet(canvas, GS.petCount, px, py));
         GS.petCount++;
-      } else {
-        GS.score += 200;
-      }
+      } else GS.score += 200;
       break;
     case 'green':
       if (GS.invincible > 0) GS.score += 400;
       GS.invincible = 300;
       GS.giant = true;
       break;
-    case 'yellow':
-      GS.score += 1000;
-      break;
-    case 'life':
-      GS.lives = Math.min(GS.lives + 1, 5);
-      break;
+    case 'yellow': GS.score += 1000; break;
+    case 'life':   GS.lives = Math.min(GS.lives + 1, 5); break;
   }
 }
 
-// --- Resize ---
+// ─── Resize ───────────────────────────────────────────────────────────────────
 function resize() {
   canvas.width  = window.innerWidth;
   canvas.height = window.innerHeight;
@@ -230,7 +225,7 @@ function onResize() {
   }, 150);
 }
 
-// --- Init ---
+// ─── Init ─────────────────────────────────────────────────────────────────────
 function init() {
   resize();
   player      = new Player(canvas);
@@ -254,7 +249,7 @@ function init() {
   initPlants();
 }
 
-// --- Update ---
+// ─── Update ───────────────────────────────────────────────────────────────────
 function update() {
   if (GS.phase !== 'playing') return;
 
@@ -264,13 +259,13 @@ function update() {
   updateRocks();
   updatePlants();
 
-  // Invincibility countdown
   if (GS.invincible > 0) {
     GS.invincible--;
     if (GS.invincible === 0) GS.giant = false;
   }
 
-  const ks = 5;
+  // Keyboard movement (speed scales with canvas height)
+  const ks = Math.round(canvas.height * 0.009);
   if (keys['ArrowUp']    || keys['w'] || keys['W']) player.targetY -= ks;
   if (keys['ArrowDown']  || keys['s'] || keys['S']) player.targetY += ks;
   if (keys['ArrowLeft']  || keys['a'] || keys['A']) player.targetX -= ks;
@@ -284,7 +279,7 @@ function update() {
     }
   }
 
-  // Pet update and fire
+  // Pet fire
   for (const p of pets) {
     const petFired = p.update(player);
     if (petFired) {
@@ -299,13 +294,21 @@ function update() {
   for (const b of bullets) b.update(canvas);
   bullets = bullets.filter(b => !b.dead);
 
-  for (const e of enemies) e.update();
+  // Enemy update — boss returns shots when firing
+  for (const e of enemies) {
+    const shots = e.update();
+    if (shots) {
+      for (const s of shots) {
+        bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false));
+      }
+    }
+  }
   enemies = enemies.filter(e => !e.dead);
 
   for (const item of items) item.update();
   items = items.filter(item => !item.dead);
 
-  // Bullets vs enemies
+  // Player bullets vs enemies
   for (const b of bullets) {
     if (!b.fromPlayer) continue;
     for (const e of enemies) {
@@ -318,26 +321,32 @@ function update() {
           GS.score += e.scoreValue;
           if (e.onDeath) e.onDeath();
           else e.dead = true;
-          if (e.dropLife) {
-            items.push(new Item(e.x, e.y, 'life'));
-          } else {
-            const drop = rollDrop(e.x, e.y);
-            if (drop) items.push(drop);
-          }
+          if (e.dropLife) items.push(new Item(e.x, e.y, 'life'));
+          else { const drop = rollDrop(e.x, e.y); if (drop) items.push(drop); }
         }
       }
     }
   }
 
-  // Enemies vs player (skipped while invincible)
+  // Enemy body vs player
   if (GS.invincible === 0 && player.hitTimer === 0) {
     for (const e of enemies) {
       if (e.dead || e.dying) continue;
       if (overlap(e, player)) {
         e.dead = true;
-        if (player.hit()) {
-          if (GS.lives <= 0) GS.phase = 'gameover';
-        }
+        if (player.hit() && GS.lives <= 0) GS.phase = 'gameover';
+        break;
+      }
+    }
+  }
+
+  // Enemy bullets vs player
+  if (GS.invincible === 0 && player.hitTimer === 0) {
+    for (const b of bullets) {
+      if (b.fromPlayer || b.dead) continue;
+      if (overlap(b, player)) {
+        b.dead = true;
+        if (player.hit() && GS.lives <= 0) GS.phase = 'gameover';
         break;
       }
     }
@@ -353,7 +362,7 @@ function update() {
   }
 }
 
-// --- Draw ---
+// ─── Draw ─────────────────────────────────────────────────────────────────────
 function draw() {
   drawBg();
   items.forEach(item => item.draw(ctx));
@@ -364,17 +373,13 @@ function draw() {
   drawUI(ctx, canvas);
   stage1.draw(ctx, canvas);
   if (GS.phase === 'stageclear') drawStageClear(ctx, canvas);
-  if (GS.phase === 'gameover') drawGameOver(ctx, canvas);
+  if (GS.phase === 'gameover')   drawGameOver(ctx, canvas);
 }
 
-// --- Loop ---
-function loop() {
-  update();
-  draw();
-  requestAnimationFrame(loop);
-}
+// ─── Loop ─────────────────────────────────────────────────────────────────────
+function loop() { update(); draw(); requestAnimationFrame(loop); }
 
-// --- Input ---
+// ─── Input ────────────────────────────────────────────────────────────────────
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   if (GS.phase === 'gameover' || GS.phase === 'stageclear') { init(); return; }
@@ -409,6 +414,6 @@ window.addEventListener('keyup', e => { keys[e.key] = false; });
 
 window.addEventListener('resize', onResize);
 
-// --- Start ---
+// ─── Start ────────────────────────────────────────────────────────────────────
 init();
 loop();

@@ -4,52 +4,58 @@ const enemyImgs = {};
   enemyImgs[t].src = `assets/images/enemy_${t}.png`;
 });
 
+// Size ratios relative to canvas.height
 const ENEMY_DEFS = {
-  squid:    { w: 48, h: 48, hp: 1, score: 100 },
-  shrimp:   { w: 52, h: 40, hp: 1, score: 100 },
-  hairtail: { w: 160, h: 80, hp: 2, score: 200 },
+  squid:    { wR: 0.080, hR: 0.080, hp: 1, score: 100 },
+  shrimp:   { wR: 0.085, hR: 0.065, hp: 1, score: 100 },
+  hairtail: { wR: 0.200, hR: 0.100, hp: 2, score: 200 },
 };
 
 class Enemy {
   constructor(canvas, type) {
     const t = type || ['squid', 'shrimp', 'hairtail'][Math.floor(Math.random() * 3)];
-    const def = ENEMY_DEFS[t];
     this.canvas = canvas;
-    this.type = t;
-    this.x = canvas.width + def.w;
-    this.y = 60 + Math.random() * (canvas.height - 130);
+    this.type   = t;
+    this.hp     = ENEMY_DEFS[t].hp;
+    this.scoreValue = ENEMY_DEFS[t].score;
+
+    const uiH = Math.round(canvas.height * 0.085);
+    this.x = canvas.width + this.w;
+    this.y = uiH + this.h / 2 + Math.random() * (canvas.height - uiH - this.h - 40);
+
+    const s = canvas.height / 600;
     const speedMult = Math.min(1 + GS.score / 3000, 2.5);
-    const baseMult = t === 'hairtail' ? 1.0 : 0.65;
-    this.vx = -(Math.random() * 1.5 + 1.5) * speedMult * baseMult;
-    this.w = def.w;
-    this.h = def.h;
-    this.hp = def.hp;
-    this.scoreValue = def.score;
+    const baseMult  = t === 'hairtail' ? 1.0 : 0.65;
+    this.vx = -(Math.random() * 1.5 + 1.5) * speedMult * baseMult * s;
+
     this.dead = false;
     this.dying = false;
     this.t = Math.random() * Math.PI * 2;
     this.hitFlash = 0;
   }
 
-  onHit() {
-    this.hitFlash = 4;
-  }
+  get w() { return Math.round(this.canvas.height * ENEMY_DEFS[this.type].wR); }
+  get h() { return Math.round(this.canvas.height * ENEMY_DEFS[this.type].hR); }
+
+  onHit() { this.hitFlash = 4; }
 
   update() {
+    const s   = this.canvas.height / 600;
+    const sbH = Math.round(this.canvas.height * 0.035);
+    const uiH = Math.round(this.canvas.height * 0.085);
+
     this.x += this.vx;
     this.t += 0.055;
-    this.y += Math.sin(this.t) * 0.5;
-    this.y = Math.max(40, Math.min(this.canvas.height - 50, this.y));
-    if (this.x < -120) this.dead = true;
+    this.y += Math.sin(this.t) * 0.5 * s;
+    this.y = Math.max(uiH + this.h / 2, Math.min(this.canvas.height - sbH - this.h / 2, this.y));
+    if (this.x < -(this.w + 20)) this.dead = true;
     if (this.hitFlash > 0) this.hitFlash--;
   }
 
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
-    if (this.hitFlash > 0) {
-      ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
-    }
+    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
     const img = enemyImgs[this.type];
     if (img && img.complete && img.naturalWidth > 0) {
       ctx.drawImage(img, -this.w / 2, -this.h / 2, this.w, this.h);

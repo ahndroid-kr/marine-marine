@@ -1,3 +1,4 @@
+// canvas is the global from main.js — available at call-time
 class Bullet {
   constructor(x, y, vx, vy, fromPlayer) {
     this.x = x;
@@ -5,15 +6,19 @@ class Bullet {
     this.vx = vx;
     this.vy = vy;
     this.fromPlayer = fromPlayer;
-    this.w = fromPlayer ? 22 : 14;
-    this.h = fromPlayer ? 6 : 5;
     this.dead = false;
   }
 
-  update(canvas) {
+  // Dynamic sizing relative to canvas height
+  get w() { return Math.round(canvas.height * (this.fromPlayer ? 0.036 : 0.022)); }
+  get h() { return Math.round(canvas.height * (this.fromPlayer ? 0.010 : 0.022)); }
+
+  update(c) {
     this.x += this.vx;
     this.y += this.vy;
-    if (this.x > canvas.width + 60 || this.x < -60) this.dead = true;
+    if (this.x > c.width + 80 || this.x < -80 || this.y < -80 || this.y > c.height + 80) {
+      this.dead = true;
+    }
   }
 
   draw(ctx) {
@@ -43,10 +48,15 @@ class Bullet {
       ctx.fillStyle = 'rgba(150, 220, 255, 0.5)';
       ctx.fill();
     } else {
+      // Enemy bullet: glowing red orb
+      const r = this.w / 2;
       ctx.beginPath();
-      ctx.ellipse(0, 0, this.w / 2, this.h / 2, 0, 0, Math.PI * 2);
-      ctx.fillStyle = '#e03030';
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = '#ff3300';
+      ctx.shadowColor = '#ff2200';
+      ctx.shadowBlur = Math.round(canvas.height * 0.015);
       ctx.fill();
+      ctx.shadowBlur = 0;
     }
 
     ctx.restore();
