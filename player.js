@@ -104,47 +104,43 @@ class Player {
       const rx0 = drawW / 2 + 20;
       const ry0 = drawH / 2 + 20;
 
-      const hexPath = (rx, ry) => {
+      const ovalPath = (rx, ry) => {
         ctx.beginPath();
-        for (let i = 0; i < 6; i++) {
-          const a = (Math.PI / 3) * i;
-          i === 0 ? ctx.moveTo(rx * Math.cos(a), ry * Math.sin(a))
-                  : ctx.lineTo(rx * Math.cos(a), ry * Math.sin(a));
-        }
+        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
         ctx.closePath();
       };
 
       const drawShieldLayer = (rx, ry, glowBoost) => {
-        // outermost wide blur — aura spreading inward
-        ctx.globalAlpha = (0.18 + 0.12 * pulse) * glowBoost;
+        // outermost wide aura
+        ctx.globalAlpha = (0.15 + 0.10 * pulse) * glowBoost;
         ctx.strokeStyle = glowCol;
         ctx.shadowColor = glowCol;
-        ctx.lineWidth = 22;
-        ctx.shadowBlur = 40 + 20 * pulse;
-        hexPath(rx, ry);
+        ctx.lineWidth = 24;
+        ctx.shadowBlur = 44 + 22 * pulse;
+        ovalPath(rx, ry);
         ctx.stroke();
 
         // mid glow halo
-        ctx.globalAlpha = (0.35 + 0.20 * pulse) * glowBoost;
+        ctx.globalAlpha = (0.32 + 0.18 * pulse) * glowBoost;
         ctx.lineWidth = 10;
-        ctx.shadowBlur = 24 + 12 * pulse;
-        hexPath(rx, ry);
+        ctx.shadowBlur = 26 + 14 * pulse;
+        ovalPath(rx, ry);
         ctx.stroke();
 
-        // bright core edge
+        // bright core ring
         ctx.globalAlpha = 0.80 + 0.20 * pulse;
         ctx.strokeStyle = coreCol;
         ctx.shadowColor = coreCol;
         ctx.lineWidth = 2;
-        ctx.shadowBlur = 16 + 8 * pulse;
-        hexPath(rx, ry);
+        ctx.shadowBlur = 18 + 8 * pulse;
+        ovalPath(rx, ry);
         ctx.stroke();
 
         // near-invisible inner fill
-        ctx.globalAlpha = 0.05 + 0.05 * pulse;
+        ctx.globalAlpha = 0.05 + 0.04 * pulse;
         ctx.fillStyle = coreCol;
         ctx.shadowBlur = 0;
-        hexPath(rx, ry);
+        ovalPath(rx, ry);
         ctx.fill();
       };
 
