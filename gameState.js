@@ -1,7 +1,7 @@
 const GS = {
   score: 0,
   lives: 3,
-  phase: 'playing', // 'playing' | 'gameover'
+  phase: 'playing', // 'playing' | 'stageclear' | 'gameover'
   scrollX: 0,
   scrollSpeed: 1.5,
   powerLevel: 0,   // 0-3

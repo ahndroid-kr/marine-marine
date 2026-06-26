@@ -55,6 +55,36 @@ function drawUI(ctx, canvas) {
   ctx.restore();
 }
 
+function drawStageClear(ctx, canvas) {
+  ctx.save();
+
+  ctx.fillStyle = 'rgba(0, 5, 15, 0.75)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const cx = canvas.width / 2;
+  const cy = canvas.height / 2;
+
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'alphabetic';
+
+  ctx.font = 'bold 52px monospace';
+  ctx.fillStyle = '#ffe066';
+  ctx.shadowColor = '#ffcc00';
+  ctx.shadowBlur = 28;
+  ctx.fillText('STAGE CLEAR!', cx, cy - 16);
+
+  ctx.font = '22px monospace';
+  ctx.fillStyle = '#ffffff';
+  ctx.shadowBlur = 0;
+  ctx.fillText(`SCORE  ${GS.score}`, cx, cy + 32);
+
+  ctx.font = '17px monospace';
+  ctx.globalAlpha = 0.75 + 0.25 * Math.sin(Date.now() / 400);
+  ctx.fillText('TAP OR CLICK TO PLAY AGAIN', cx, cy + 76);
+
+  ctx.restore();
+}
+
 function drawGameOver(ctx, canvas) {
   ctx.save();
 

@@ -363,6 +363,7 @@ function draw() {
   player.draw(ctx);
   drawUI(ctx, canvas);
   stage1.draw(ctx, canvas);
+  if (GS.phase === 'stageclear') drawStageClear(ctx, canvas);
   if (GS.phase === 'gameover') drawGameOver(ctx, canvas);
 }
 
@@ -376,7 +377,7 @@ function loop() {
 // --- Input ---
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
-  if (GS.phase === 'gameover') { init(); return; }
+  if (GS.phase === 'gameover' || GS.phase === 'stageclear') { init(); return; }
   const t = e.touches[0];
   player.setTarget(t.clientX, t.clientY);
 }, { passive: false });
@@ -392,7 +393,7 @@ canvas.addEventListener('touchend', e => { e.preventDefault(); }, { passive: fal
 let mouseDown = false;
 canvas.addEventListener('mousedown', e => {
   mouseDown = true;
-  if (GS.phase === 'gameover') { init(); return; }
+  if (GS.phase === 'gameover' || GS.phase === 'stageclear') { init(); return; }
   player.setTarget(e.clientX, e.clientY);
 });
 canvas.addEventListener('mousemove', e => {
