@@ -94,39 +94,56 @@ class Player {
     ctx.drawImage(playerImg, -drawW / 2, -drawH / 2, drawW, drawH);
 
     if (GS.shield > 0) {
-      const t = performance.now() / 800;
-      const pulse = 0.5 + 0.5 * Math.sin(t * 2.5);
+      ctx.save();
 
-      const drawRing = (rx, ry, color) => {
-        ctx.strokeStyle = color;
-        ctx.shadowColor = color;
+      const pulse = 0.5 + 0.5 * Math.sin(performance.now() * (Math.PI * 2 / 1500));
+      const isDouble = GS.shield >= 2;
+      const col = isDouble ? '#e040fb' : '#00e5ff';
+      const glowMult = isDouble ? 1.7 : 1.0;
 
-        ctx.globalAlpha = 0.10 + 0.08 * pulse;
-        ctx.lineWidth = 14;
-        ctx.shadowBlur = 32;
+      const rx0 = drawW / 2 + 20;
+      const ry0 = drawH / 2 + 20;
+
+      // flat-top hexagon path
+      const hexPath = (rx, ry) => {
         ctx.beginPath();
-        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        for (let i = 0; i < 6; i++) {
+          const a = (Math.PI / 3) * i;
+          i === 0 ? ctx.moveTo(rx * Math.cos(a), ry * Math.sin(a))
+                  : ctx.lineTo(rx * Math.cos(a), ry * Math.sin(a));
+        }
+        ctx.closePath();
+      };
+
+      const drawShieldLayer = (rx, ry) => {
+        // semi-transparent inner fill
+        ctx.globalAlpha = 0.15 + 0.08 * pulse;
+        ctx.fillStyle = col;
+        ctx.shadowBlur = 0;
+        hexPath(rx, ry);
+        ctx.fill();
+
+        // thick outer glow stroke
+        ctx.globalAlpha = 0.40 + 0.28 * pulse;
+        ctx.strokeStyle = col;
+        ctx.shadowColor = col;
+        ctx.lineWidth = 10;
+        ctx.shadowBlur = (26 + 16 * pulse) * glowMult;
+        hexPath(rx, ry);
         ctx.stroke();
 
-        ctx.globalAlpha = 0.40 + 0.20 * pulse;
-        ctx.lineWidth = 4;
-        ctx.shadowBlur = 18;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
-        ctx.stroke();
-
-        ctx.globalAlpha = 0.90;
-        ctx.lineWidth = 1.5;
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
+        // bright core edge
+        ctx.globalAlpha = 0.82 + 0.18 * pulse;
+        ctx.lineWidth = 2;
+        ctx.shadowBlur = 14 * glowMult;
+        hexPath(rx, ry);
         ctx.stroke();
       };
 
-      drawRing(drawW / 2 + 14, drawH / 2 + 12, '#3399ff');
-      if (GS.shield >= 2) {
-        drawRing(drawW / 2 + 28, drawH / 2 + 26, '#00ffff');
-      }
+      if (isDouble) drawShieldLayer(rx0 + 18, ry0 + 18);
+      drawShieldLayer(rx0, ry0);
+
+      ctx.restore();
     }
 
     ctx.restore();
