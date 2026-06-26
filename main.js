@@ -362,6 +362,7 @@ function draw() {
   pets.forEach(p => p.draw(ctx));
   player.draw(ctx);
   drawUI(ctx, canvas);
+  stage1.draw(ctx, canvas);
   if (GS.phase === 'gameover') drawGameOver(ctx, canvas);
 }
 
