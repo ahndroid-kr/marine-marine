@@ -14,8 +14,6 @@ class MidbossRay {
     this.canvas = canvas;
     this.x = canvas.width + 80;
     this.y = canvas.height / 2;
-    this.w = 160;
-    this.h = 160;
     this.maxHp = 30;
     this.hp = 30;
     this.dead = false;
@@ -28,11 +26,15 @@ class MidbossRay {
     this.hitEffects = [];
   }
 
+  // render & hitbox size: 25% of canvas height
+  get w() { return Math.round(this.canvas.height * 0.25); }
+  get h() { return Math.round(this.canvas.height * 0.25); }
+
   onHit() {
     this.hitFlash = 6;
     this.hitEffects.push({
-      x: (Math.random() - 0.5) * 60,
-      y: (Math.random() - 0.5) * 60,
+      x: (Math.random() - 0.5) * this.w * 0.5,
+      y: (Math.random() - 0.5) * this.h * 0.5,
       timer: 12,
     });
   }
@@ -41,17 +43,20 @@ class MidbossRay {
     this.x += this.vx;
     this.t += 0.025;
     this.y += Math.sin(this.t) * 1.2;
-    this.y = Math.max(70, Math.min(this.canvas.height - 70, this.y));
+    const margin = this.h / 2 + 10;
+    this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
     if (this.hitFlash > 0) this.hitFlash--;
     this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
-    if (this.x < -160) this.dead = true;
+    if (this.x < -(this.w + 40)) this.dead = true;
   }
 
   draw(ctx) {
+    const hw = this.w / 2;
+    const hh = this.h / 2;
     ctx.save();
     ctx.translate(this.x, this.y);
     if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
-    ctx.drawImage(midbossRayImg, -80, -80, 160, 160);
+    ctx.drawImage(midbossRayImg, -hw, -hh, this.w, this.h);
     ctx.globalAlpha = 1;
     for (const e of this.hitEffects) {
       ctx.save();
@@ -59,11 +64,11 @@ class MidbossRay {
       ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
       ctx.restore();
     }
-    const barW = 100, barH = 7;
+    const barW = Math.round(this.w * 0.7), barH = 7;
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(-barW / 2 - 1, 88, barW + 2, barH + 2);
+    ctx.fillRect(-barW / 2 - 1, hh + 8, barW + 2, barH + 2);
     ctx.fillStyle = '#ff9900';
-    ctx.fillRect(-barW / 2, 89, barW * (this.hp / this.maxHp), barH);
+    ctx.fillRect(-barW / 2, hh + 9, barW * (this.hp / this.maxHp), barH);
     ctx.restore();
   }
 }
@@ -73,8 +78,6 @@ class BossPuffer {
     this.canvas = canvas;
     this.x = canvas.width + 130;
     this.y = canvas.height / 2;
-    this.w = 180;
-    this.h = 180;
     this.maxHp = 80;
     this.hp = 80;
     this.phase = 1;
@@ -89,11 +92,15 @@ class BossPuffer {
     this.hitEffects = [];
   }
 
+  // render & hitbox size: 25% of canvas height
+  get w() { return Math.round(this.canvas.height * 0.25); }
+  get h() { return Math.round(this.canvas.height * 0.25); }
+
   onHit() {
     this.hitFlash = 6;
     this.hitEffects.push({
-      x: (Math.random() - 0.5) * 100,
-      y: (Math.random() - 0.5) * 100,
+      x: (Math.random() - 0.5) * this.w * 0.6,
+      y: (Math.random() - 0.5) * this.h * 0.6,
       timer: 14,
     });
   }
@@ -112,11 +119,12 @@ class BossPuffer {
     this.t += 0.018;
     this.x += this.vx;
     this.y += Math.sin(this.t * 0.8) * 0.9;
-    this.y = Math.max(100, Math.min(this.canvas.height - 100, this.y));
+    const margin = this.h / 2 + 10;
+    this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
     if (this.hp <= this.maxHp / 2 && this.phase === 1) this.phase = 2;
     if (this.hitFlash > 0) this.hitFlash--;
     this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
-    if (this.x < -220) this.dead = true;
+    if (this.x < -(this.w + 60)) this.dead = true;
   }
 
   get currentImg() {
@@ -125,10 +133,10 @@ class BossPuffer {
   }
 
   draw(ctx) {
+    const half = this.w / 2;
     ctx.save();
     ctx.translate(this.x, this.y);
     if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
-    const half = this.w / 2;
     ctx.drawImage(this.currentImg, -half, -half, this.w, this.h);
     ctx.globalAlpha = 1;
     for (const e of this.hitEffects) {
@@ -138,12 +146,12 @@ class BossPuffer {
       ctx.restore();
     }
     if (!this.dying) {
-      const barW = 160, barH = 10;
+      const barW = Math.round(this.w * 0.9), barH = 10;
       ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(-barW / 2 - 1, 96, barW + 2, barH + 2);
+      ctx.fillRect(-barW / 2 - 1, half + 8, barW + 2, barH + 2);
       const pct = this.hp / this.maxHp;
       ctx.fillStyle = pct > 0.5 ? '#00cc44' : '#ff3300';
-      ctx.fillRect(-barW / 2, 97, barW * pct, barH);
+      ctx.fillRect(-barW / 2, half + 9, barW * pct, barH);
     }
     ctx.restore();
   }
