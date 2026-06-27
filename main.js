@@ -219,8 +219,8 @@ function applyItem(type, px, py) {
 function resize() {
   canvas.width        = window.innerWidth;
   canvas.height       = window.innerHeight;
-  canvas.style.width  = canvas.width  + 'px';
-  canvas.style.height = canvas.height + 'px';
+  canvas.style.width  = '';
+  canvas.style.height = '';
   if (player) player.clamp();
 }
 
