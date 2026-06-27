@@ -148,14 +148,35 @@ class BossPuffer {
 
   onHit() {
     this.hitFlash = 6;
+    // Position effects on the boss perimeter so they show around the sprite, not on top
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = (this.w / 2) * (0.75 + Math.random() * 0.45);
     this.hitEffects.push({
-      x: (Math.random() - 0.5) * this.w * 0.6,
-      y: (Math.random() - 0.5) * this.h * 0.6,
+      x: Math.cos(angle) * dist,
+      y: Math.sin(angle) * dist,
       timer: 14,
     });
   }
 
   onDeath() { this.dying = true; this.deadTimer = 0; }
+
+  // Returns item drop descriptors on kill — life (2x) + 2~3 random stars
+  getDrops() {
+    const sp      = this.w * 0.55;
+    const drops   = [{ x: this.x, y: this.y, type: 'life', sizeScale: 2 }];
+    const count   = 2 + Math.floor(Math.random() * 2); // 2 or 3
+    const types   = ['red', 'blue', 'yellow'];
+    for (let i = 0; i < count; i++) {
+      const a = (Math.PI * 2 / count) * i - Math.PI / 2;
+      drops.push({
+        x: this.x + Math.cos(a) * sp,
+        y: this.y + Math.sin(a) * sp,
+        type: types[Math.floor(Math.random() * types.length)],
+        sizeScale: 1,
+      });
+    }
+    return drops;
+  }
 
   // Returns array of {x, y, vx, vy} shot descriptors, or null
   getShots() {
@@ -229,15 +250,19 @@ class BossPuffer {
     const half = this.w / 2;
     ctx.save();
     ctx.translate(this.x, this.y);
-    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
-    ctx.drawImage(this.currentImg, -half, -half, this.w, this.h);
-    ctx.globalAlpha = 1;
+
+    // Hit effects rendered BEHIND the boss sprite
     for (const e of this.hitEffects) {
       ctx.save();
       ctx.globalAlpha = e.timer / 14;
       ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
       ctx.restore();
     }
+
+    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    ctx.drawImage(this.currentImg, -half, -half, this.w, this.h);
+    ctx.globalAlpha = 1;
+
     if (!this.dying) {
       const barW = Math.round(this.w * 0.9);
       const barH = Math.round(this.canvas.height * 0.015);

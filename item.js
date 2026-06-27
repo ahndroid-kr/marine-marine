@@ -9,19 +9,20 @@ itemLifeImg.src = 'assets/images/item_life.png';
 const STAR_TYPES = ['red', 'blue', 'pink', 'green', 'yellow'];
 
 class Item {
-  constructor(x, y, type) {
-    this.x    = x;
-    this.y    = y;
-    this.type = type || STAR_TYPES[Math.floor(Math.random() * STAR_TYPES.length)];
-    this.dead = false;
-    const s   = canvas.height / 600;
-    this.vx   = -(Math.random() * 0.8 + 1) * s;
-    this.t    = Math.random() * Math.PI * 2;
+  constructor(x, y, type, sizeScale = 1) {
+    this.x         = x;
+    this.y         = y;
+    this.type      = type || STAR_TYPES[Math.floor(Math.random() * STAR_TYPES.length)];
+    this.dead      = false;
+    this.sizeScale = sizeScale;
+    const s        = canvas.height / 600;
+    this.vx        = -(Math.random() * 0.8 + 1) * s;
+    this.t         = Math.random() * Math.PI * 2;
   }
 
   // canvas is the global from main.js
-  get w() { return Math.round(canvas.height * 0.053); }
-  get h() { return Math.round(canvas.height * 0.053); }
+  get w() { return Math.round(canvas.height * 0.053 * this.sizeScale); }
+  get h() { return Math.round(canvas.height * 0.053 * this.sizeScale); }
 
   update() {
     const s = canvas.height / 600;

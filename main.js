@@ -321,8 +321,14 @@ function update() {
           GS.score += e.scoreValue;
           if (e.onDeath) e.onDeath();
           else e.dead = true;
-          if (e.dropLife) items.push(new Item(e.x, e.y, 'life'));
-          else { const drop = rollDrop(e.x, e.y); if (drop) items.push(drop); }
+          if (e.getDrops) {
+            for (const d of e.getDrops()) items.push(new Item(d.x, d.y, d.type, d.sizeScale));
+          } else if (e.dropLife) {
+            items.push(new Item(e.x, e.y, 'life'));
+          } else {
+            const drop = rollDrop(e.x, e.y);
+            if (drop) items.push(drop);
+          }
         }
       }
     }
