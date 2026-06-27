@@ -1,7 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
 
-let player, bullets, enemies, items, pets, frame;
+let player, bullets, enemies, items, pets, frame, scorePopups;
 const keys = {};
 
 let paused           = false;
@@ -176,7 +176,10 @@ function applyItem(type, px, py) {
       GS.invincible = 300;
       GS.giant = true;
       break;
-    case 'yellow': GS.score += 1000; break;
+    case 'yellow':
+      GS.score += 1000;
+      scorePopups.push({ x: px, y: py, timer: 55 });
+      break;
     case 'life':   GS.lives = Math.min(GS.lives + 1, 5); break;
   }
 }
@@ -212,11 +215,12 @@ function init() {
   paused = false;
   resize();
   player      = new Player(canvas);
-  bullets     = [];
-  enemies     = [];
-  items       = [];
-  pets        = [];
-  frame       = 0;
+  bullets      = [];
+  enemies      = [];
+  items        = [];
+  pets         = [];
+  scorePopups  = [];
+  frame        = 0;
   GS.score      = 0;
   GS.lives      = 3;
   GS.phase      = 'playing';
@@ -382,6 +386,10 @@ function update() {
     }
   }
 
+  // Score popups
+  for (const p of scorePopups) { p.y -= 0.7; p.timer--; }
+  scorePopups = scorePopups.filter(p => p.timer > 0);
+
   // Items vs player
   for (const item of items) {
     if (item.dead) continue;
@@ -392,6 +400,21 @@ function update() {
   }
 }
 
+// ─── Score popups ─────────────────────────────────────────────────────────────
+function drawScorePopups() {
+  const fontSize = Math.round(canvas.height * 0.028);
+  ctx.save();
+  ctx.font = `bold ${fontSize}px sans-serif`;
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for (const p of scorePopups) {
+    ctx.globalAlpha = p.timer / 55;
+    ctx.fillStyle = '#FFD700';
+    ctx.fillText('+1000', p.x, p.y);
+  }
+  ctx.restore();
+}
+
 // ─── Draw ─────────────────────────────────────────────────────────────────────
 function draw() {
   drawBg();
@@ -400,6 +423,7 @@ function draw() {
   bullets.forEach(b => b.draw(ctx));
   pets.forEach(p => p.draw(ctx));
   player.draw(ctx);
+  drawScorePopups();
   drawUI(ctx, canvas);
   stage1.draw(ctx, canvas);
   if (GS.phase === 'stageclear') drawStageClear(ctx, canvas);
