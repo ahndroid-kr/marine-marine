@@ -228,7 +228,6 @@ function init() {
   GS.giant      = false;
   stage1.init();
   initBg();
-  initSeabed();
   initPlants();
 }
 
