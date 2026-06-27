@@ -226,12 +226,19 @@ function resize() {
 
 let resizeTimer = null;
 function onResize() {
-  resize();
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  console.log('[resize]', W, H);
+  canvas.width        = W;
+  canvas.height       = H;
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     initBg();
     initSeabed();
     initPlants();
+    if (player) player.clamp();
   }, 150);
 }
 
