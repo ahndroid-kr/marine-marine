@@ -12,19 +12,21 @@ effectBossHitImg.src = 'assets/images/effect_boss_hit.png';
 // ─── Mid-boss ────────────────────────────────────────────────────────────────
 class MidbossRay {
   constructor(canvas) {
-    this.canvas    = canvas;
-    this.x         = canvas.width + 80;
-    this.y         = canvas.height / 2;
-    this.maxHp     = 30;
-    this.hp        = 30;
-    this.dead      = false;
-    this.dying     = false;
-    this.scoreValue = 3000;
-    this.dropLife  = false;
-    this.vx        = -0.9 * canvas.height / 600;
-    this.t         = 0;
-    this.hitFlash  = 0;
-    this.hitEffects = [];
+    this.canvas        = canvas;
+    this.x             = canvas.width + 80;
+    this.y             = canvas.height / 2;
+    this.maxHp         = 20;
+    this.hp            = 20;
+    this.dead          = false;
+    this.dying         = false;
+    this.scoreValue    = 500;
+    this.dropLife      = false;
+    this.t             = 0;
+    this.hitFlash      = 0;
+    this.hitEffects    = [];
+    this.behaviorPhase = 'advance'; // 'advance' | 'dash'
+    this.fireTimer     = 0;
+    this.dashDir       = -1; // -1 = left, 1 = right
   }
 
   get w() { return Math.round(this.canvas.height * 0.25); }
@@ -39,17 +41,55 @@ class MidbossRay {
     });
   }
 
+  _fire8Way() {
+    const spd = 5 * this.canvas.height / 600;
+    return Array.from({ length: 8 }, (_, i) => {
+      const a = (Math.PI * 2 / 8) * i;
+      return { x: this.x, y: this.y, vx: spd * Math.cos(a), vy: spd * Math.sin(a) };
+    });
+  }
+
   update() {
     const s = this.canvas.height / 600;
-    this.x += this.vx;
     this.t += 0.025;
-    this.y += Math.sin(this.t) * 1.2 * s;
-    const margin = this.h / 2 + 10;
-    this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
     if (this.hitFlash > 0) this.hitFlash--;
     this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
-    if (this.x < -(this.w + 40)) this.dead = true;
-    return null; // no attack
+
+    if (this.behaviorPhase === 'advance') {
+      // Pattern 1: slow advance + 8-way fire every 3 seconds (180 frames)
+      this.x += -0.9 * s;
+      this.y += Math.sin(this.t) * 1.2 * s;
+      const margin = this.h / 2 + 10;
+      this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
+
+      if (this.hp <= this.maxHp * 0.5) {
+        this.behaviorPhase = 'dash';
+        this.dashDir = -1;
+        return null;
+      }
+
+      if (this.x < -(this.w + 40)) { this.dead = true; return null; }
+
+      this.fireTimer++;
+      if (this.fireTimer >= 180) {
+        this.fireTimer = 0;
+        return this._fire8Way();
+      }
+    } else {
+      // Pattern 2: dash across screen and reappear from opposite side
+      const dashSpd = 14 * s;
+      this.x += dashSpd * this.dashDir;
+
+      if (this.dashDir < 0 && this.x < -(this.w / 2 + 40)) {
+        this.x = this.canvas.width + this.w / 2;
+        this.dashDir = 1;
+      } else if (this.dashDir > 0 && this.x > this.canvas.width + this.w / 2 + 40) {
+        this.x = -(this.w / 2);
+        this.dashDir = -1;
+      }
+    }
+
+    return null;
   }
 
   draw(ctx) {

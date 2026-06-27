@@ -2,8 +2,9 @@ const stage1 = {
   spawnTimer: 0,
   midbossSpawned: false,
   bossSpawned: false,
-  warning: null,   // { type: 'midboss'|'boss', timer }
-  bossRef: null,   // reference to live boss enemy
+  warning: null,      // { type: 'boss', timer } — final boss only
+  bossRef: null,      // reference to live final boss
+  midbossRef: null,   // reference to live mid-boss
 
   init() {
     this.spawnTimer = 0;
@@ -11,35 +12,40 @@ const stage1 = {
     this.bossSpawned = false;
     this.warning = null;
     this.bossRef = null;
+    this.midbossRef = null;
   },
 
   update(frame, canvas, enemies) {
-    // 1. Detect boss death
+    // 1. Detect final boss death
     if (this.bossRef && this.bossRef.dead) {
       if (this.bossRef instanceof BossPuffer) GS.phase = 'stageclear';
       this.bossRef = null;
     }
+    // Track midboss death
+    if (this.midbossRef && this.midbossRef.dead) this.midbossRef = null;
 
-    // 2. Trigger warning (only when no boss alive and no warning running)
-    if (!this.midbossSpawned && !this.warning && !this.bossRef && frame >= 1800) {
+    // 2. Spawn midboss directly at frame 1800 — no WARNING, normal spawning continues
+    if (!this.midbossSpawned && frame >= 1800) {
       this.midbossSpawned = true;
-      this.warning = { type: 'midboss', timer: 0 };
+      const midboss = new MidbossRay(canvas);
+      enemies.push(midboss);
+      this.midbossRef = midboss;
     }
+
+    // 3. Trigger WARNING for final boss only (no midboss alive required)
     if (!this.bossSpawned && !this.warning && !this.bossRef && frame >= 4800) {
       this.bossSpawned = true;
       this.warning = { type: 'boss', timer: 0 };
     }
 
-    // 3. Suspend normal spawning while boss is alive
+    // 4. Suspend normal spawning only while final boss is alive
     if (this.bossRef) return;
 
-    // 4. Warning countdown — suspend spawning here too
+    // 5. Warning countdown for final boss — suspend spawning
     if (this.warning) {
       this.warning.timer++;
       if (this.warning.timer >= 150) {
-        const boss = this.warning.type === 'midboss'
-          ? new MidbossRay(canvas)
-          : new BossPuffer(canvas);
+        const boss = new BossPuffer(canvas);
         enemies.push(boss);
         this.bossRef = boss;
         this.warning = null;
@@ -47,7 +53,7 @@ const stage1 = {
       return;
     }
 
-    // 5. Normal enemy spawning
+    // 6. Normal enemy spawning (runs even while midboss is alive)
     this.spawnTimer++;
     const interval = Math.max(38, 85 - Math.floor(GS.score / 400) * 4);
     if (this.spawnTimer >= interval) {
@@ -63,7 +69,7 @@ const stage1 = {
     }
   },
 
-  // WARNING overlay
+  // WARNING overlay — final boss only
   draw(ctx, canvas) {
     if (!this.warning) return;
     const isOn = Math.floor(this.warning.timer / 25) % 2 === 0;
