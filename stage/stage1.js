@@ -81,20 +81,20 @@ const stage1 = {
 
     const cx = canvas.width / 2;
     const cy = canvas.height / 2;
-    const fs = Math.round(Math.min(canvas.width, canvas.height) * 0.09);
+    const fs = Math.round(Math.min(canvas.width, canvas.height) * 0.062);
 
-    ctx.textAlign = 'center';
+    ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
-    ctx.font = `bold ${fs}px monospace`;
-    ctx.fillStyle = '#ff2222';
-    ctx.shadowColor = '#ff0000';
-    ctx.shadowBlur = 48;
+    ctx.font         = `${fs}px 'Press Start 2P', monospace`;
+    ctx.fillStyle    = '#ff2222';
+    ctx.shadowColor  = '#ff0000';
+    ctx.shadowBlur   = 48;
     ctx.fillText('⚠  WARNING  ⚠', cx, cy);
 
-    ctx.font = `bold ${Math.round(fs * 0.33)}px monospace`;
-    ctx.fillStyle = '#ffaaaa';
-    ctx.shadowBlur = 16;
-    ctx.fillText('BOSS APPROACHING', cx, cy + Math.round(fs * 0.85));
+    ctx.font         = `${Math.round(fs * 0.40)}px 'Press Start 2P', monospace`;
+    ctx.fillStyle    = '#ffaaaa';
+    ctx.shadowBlur   = 16;
+    ctx.fillText('BOSS APPROACHING', cx, cy + Math.round(fs * 1.05));
     ctx.restore();
   },
 };

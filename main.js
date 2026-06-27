@@ -4,6 +4,14 @@ const ctx    = canvas.getContext('2d');
 let player, bullets, enemies, items, pets, frame;
 const keys = {};
 
+let paused           = false;
+let pauseBtnBounds   = { x: 0, y: 0, w: 0, h: 0 };
+let restartBtnBounds = { x: 0, y: 0, w: 0, h: 0 };
+
+function inRect(px, py, r) {
+  return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
+}
+
 // ─── Image assets ─────────────────────────────────────────────────────────────
 const bgImg = new Image();
 bgImg.src = 'assets/images/bg_stage1.png';
@@ -229,6 +237,7 @@ function onResize() {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 function init() {
+  paused = false;
   resize();
   player      = new Player(canvas);
   bullets     = [];
@@ -253,7 +262,7 @@ function init() {
 
 // ─── Update ───────────────────────────────────────────────────────────────────
 function update() {
-  if (GS.phase !== 'playing') return;
+  if (paused || GS.phase !== 'playing') return;
 
   frame++;
   GS.scrollX += GS.scrollSpeed;
@@ -422,21 +431,36 @@ function draw() {
   stage1.draw(ctx, canvas);
   if (GS.phase === 'stageclear') drawStageClear(ctx, canvas);
   if (GS.phase === 'gameover')   drawGameOver(ctx, canvas);
+  if (paused && GS.phase === 'playing') drawPaused(ctx, canvas);
 }
 
 // ─── Loop ─────────────────────────────────────────────────────────────────────
 function loop() { update(); draw(); requestAnimationFrame(loop); }
 
 // ─── Input ────────────────────────────────────────────────────────────────────
+function handlePauseOrRestart(px, py) {
+  // Pause button (always visible when playing or paused)
+  if (GS.phase === 'playing' || paused) {
+    if (inRect(px, py, pauseBtnBounds)) { paused = !paused; return true; }
+  }
+  // Restart button (pause overlay only)
+  if (paused && inRect(px, py, restartBtnBounds)) { paused = false; init(); return true; }
+  return false;
+}
+
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
+  const t  = e.touches[0];
+  const px = t.clientX, py = t.clientY;
+  if (handlePauseOrRestart(px, py)) return;
+  if (paused) return;
   if (GS.phase === 'gameover' || GS.phase === 'stageclear') { init(); return; }
-  const t = e.touches[0];
-  player.setTarget(t.clientX, t.clientY);
+  player.setTarget(px, py);
 }, { passive: false });
 
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
+  if (paused) return;
   const t = e.touches[0];
   player.setTarget(t.clientX, t.clientY);
 }, { passive: false });
@@ -446,16 +470,23 @@ canvas.addEventListener('touchend', e => { e.preventDefault(); }, { passive: fal
 let mouseDown = false;
 canvas.addEventListener('mousedown', e => {
   mouseDown = true;
+  const px = e.clientX, py = e.clientY;
+  if (handlePauseOrRestart(px, py)) return;
+  if (paused) return;
   if (GS.phase === 'gameover' || GS.phase === 'stageclear') { init(); return; }
-  player.setTarget(e.clientX, e.clientY);
+  player.setTarget(px, py);
 });
 canvas.addEventListener('mousemove', e => {
-  if (mouseDown && GS.phase === 'playing') player.setTarget(e.clientX, e.clientY);
+  if (mouseDown && GS.phase === 'playing' && !paused) player.setTarget(e.clientX, e.clientY);
 });
 canvas.addEventListener('mouseup', () => { mouseDown = false; });
 
 window.addEventListener('keydown', e => {
   if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key)) e.preventDefault();
+  if ((e.key === 'Escape' || e.key === 'p' || e.key === 'P') && GS.phase === 'playing') {
+    paused = !paused;
+    return;
+  }
   keys[e.key] = true;
 });
 window.addEventListener('keyup', e => { keys[e.key] = false; });
