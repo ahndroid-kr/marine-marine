@@ -162,7 +162,7 @@ class EnemyFilefish {
     this.x = canvas.width + this.w;
     this.y = uiH + this.h / 2 + Math.random() * (canvas.height - uiH - this.h - 40);
     const s = canvas.height / 600;
-    this.vx = -(Math.random() * 0.5 + 0.7) * s;
+    this.vx = -(Math.random() * 0.8 + 1.2) * s;
     this.hitFlash = 0;
     this.fireTimer = Math.floor(Math.random() * 150);
   }
@@ -267,17 +267,17 @@ class EnemyFlounder {
       // 고속 돌진
       this.y += this.vy;
       if (this.vy > 0 && this.y > this.canvas.height + this.h) {
-        // 아래로 이탈 → 위쪽 대기로 리셋
-        this.fromTop    = true;
-        this.y          = -this.h;
+        // 아래로 이탈 → 아래쪽에서 대기, 다음엔 위로 돌진
+        this.fromTop    = false;
+        this.y          = this.canvas.height + this.h;
         this.vy         = 0;
         this.state      = 'waiting';
         this.stateTimer = 0;
         this.waitDur    = 20 + Math.floor(Math.random() * 25);
       } else if (this.vy < 0 && this.y < -this.h) {
-        // 위로 이탈 → 아래쪽 대기로 리셋
-        this.fromTop    = false;
-        this.y          = this.canvas.height + this.h;
+        // 위로 이탈 → 위쪽에서 대기, 다음엔 아래로 돌진
+        this.fromTop    = true;
+        this.y          = -this.h;
         this.vy         = 0;
         this.state      = 'waiting';
         this.stateTimer = 0;
