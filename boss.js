@@ -76,15 +76,17 @@ class MidbossRay {
         return this._fire8Way();
       }
     } else {
-      // Pattern 2: dash across screen and reappear from opposite side
+      // Pattern 2: dash and bounce off screen edges
       const dashSpd = 14 * s;
       this.x += dashSpd * this.dashDir;
 
-      if (this.dashDir < 0 && this.x < -(this.w / 2 + 40)) {
-        this.x = this.canvas.width + this.w / 2;
+      const minX = this.w / 2;
+      const maxX = this.canvas.width - this.w / 2;
+      if (this.x <= minX) {
+        this.x = minX;
         this.dashDir = 1;
-      } else if (this.dashDir > 0 && this.x > this.canvas.width + this.w / 2 + 40) {
-        this.x = -(this.w / 2);
+      } else if (this.x >= maxX) {
+        this.x = maxX;
         this.dashDir = -1;
       }
     }

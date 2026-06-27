@@ -58,6 +58,11 @@ class Player {
   hit() {
     if (GS.shield > 0) { GS.shield--; this.hitTimer = 20; return false; }
     GS.lives--;
+    GS.powerLevel = 0;
+    GS.petCount   = 0;
+    GS.invincible = 0;
+    GS.giant      = false;
+    pets.length   = 0;
     this.hitTimer = 45;
     return true;
   }

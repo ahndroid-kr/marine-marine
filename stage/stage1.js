@@ -24,8 +24,8 @@ const stage1 = {
     // Track midboss death
     if (this.midbossRef && this.midbossRef.dead) this.midbossRef = null;
 
-    // 2. Spawn midboss directly at frame 1800 — no WARNING, normal spawning continues
-    if (!this.midbossSpawned && frame >= 1800) {
+    // 2. Spawn midboss directly at frame 2700 — no WARNING, normal spawning continues
+    if (!this.midbossSpawned && frame >= 2700) {
       this.midbossSpawned = true;
       const midboss = new MidbossRay(canvas);
       enemies.push(midboss);
@@ -55,7 +55,7 @@ const stage1 = {
 
     // 6. Normal enemy spawning (runs even while midboss is alive)
     this.spawnTimer++;
-    const interval = Math.max(38, 85 - Math.floor(GS.score / 400) * 4);
+    const interval = Math.max(54, 122 - Math.floor(GS.score / 400) * 6);
     if (this.spawnTimer >= interval) {
       this.spawnTimer = 0;
       const types = ['squid', 'shrimp', 'hairtail'];
