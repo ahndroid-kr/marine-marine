@@ -243,7 +243,17 @@ class BossPuffer {
 
     const s = this.canvas.height / 600;
     this.t += 0.018;
-    this.x += this.vx;
+
+    const restX = this.canvas.width * 0.58;
+    const minX  = this.w / 2 + 20;
+    if (this.x > restX) {
+      // Advance phase: move left toward rest position
+      this.x = Math.max(restX, this.x + this.vx);
+    } else {
+      // Hover phase: gentle left-right oscillation around rest position
+      this.x = Math.max(minX, restX + Math.cos(this.t * 1.2) * (this.canvas.width * 0.03));
+    }
+
     this.y += Math.sin(this.t * 0.8) * 0.9 * s;
     const margin = this.h / 2 + 10;
     this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
@@ -253,7 +263,6 @@ class BossPuffer {
 
     if (this.hitFlash > 0) this.hitFlash--;
     this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
-    if (this.x < -(this.w + 60)) this.dead = true;
 
     // Fire pattern based on attack phase
     const ap       = this.attackPhase;
