@@ -158,6 +158,7 @@ class BossPuffer {
     this.deadTimer = 0;
     this.hitEffects = [];
     this.fireTimer = 0;
+    this.arrived   = false;
   }
 
   get w() { return Math.round(this.canvas.height * 0.25); }
@@ -246,12 +247,15 @@ class BossPuffer {
 
     const restX = this.canvas.width * 0.58;
     const minX  = this.w / 2 + 20;
-    if (this.x > restX) {
-      // Advance phase: move left toward rest position
-      this.x = Math.max(restX, this.x + this.vx);
+    if (!this.arrived) {
+      this.x += this.vx;
+      if (this.x <= restX) {
+        this.x     = restX;
+        this.arrived = true;
+      }
     } else {
-      // Hover phase: gentle left-right oscillation around rest position
-      this.x = Math.max(minX, restX + Math.cos(this.t * 1.2) * (this.canvas.width * 0.03));
+      // Hover: gentle sin-wave drift around rest position
+      this.x = Math.max(minX, restX + Math.sin(this.t * 1.1) * (this.canvas.width * 0.02));
     }
 
     this.y += Math.sin(this.t * 0.8) * 0.9 * s;
