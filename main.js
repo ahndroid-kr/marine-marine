@@ -1,7 +1,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
 
-let player, bullets, enemies, items, pets, frame, scorePopups;
+let player, bullets, enemies, items, pets, frame, scorePopups, currentStage;
 const keys = {};
 
 let paused           = false;
@@ -230,7 +230,9 @@ function init() {
   GS.petCount   = 0;
   GS.invincible = 0;
   GS.giant      = false;
-  stage1.init();
+  currentStage = stage1;
+  currentStage.init();
+  bgImg.src = 'assets/images/bg_stage1.png';
   initBg();
   initPlants();
 }
@@ -276,7 +278,18 @@ function update() {
     }
   }
 
-  stage1.update(frame, canvas, enemies);
+  // Stage-clear from stage1 → transition to stage2
+  if (GS.phase === 'stageclear' && currentStage === stage1) {
+    GS.phase     = 'playing';
+    enemies      = [];
+    bullets      = bullets.filter(b => b.fromPlayer);
+    items        = [];
+    currentStage = stage2;
+    currentStage.init();
+    bgImg.src    = 'assets/images/bg_stage2.png';
+  }
+
+  currentStage.update(frame, canvas, enemies);
 
   for (const b of bullets) b.update(canvas);
   bullets = bullets.filter(b => !b.dead);
@@ -285,7 +298,7 @@ function update() {
   for (const e of enemies) {
     const shots = e.update();
     if (shots) {
-      const isBoss = e instanceof BossPuffer;
+      const isBoss = e instanceof BossPuffer || e instanceof BossShark;
       for (const s of shots) {
         bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false, isBoss));
       }
@@ -348,7 +361,8 @@ function update() {
     for (const e of enemies) {
       if (e.dead || e.dying) continue;
       if (overlap(e, player)) {
-        if (e instanceof MidbossRay || e instanceof BossPuffer) {
+        if (e instanceof MidbossRay || e instanceof BossPuffer ||
+            e instanceof MidbossTurtle || e instanceof BossShark) {
           // Boss body contact: deal HP damage (not instant kill)
           if (e.onHit) e.onHit();
           e.hp--;
@@ -425,7 +439,7 @@ function draw() {
   player.draw(ctx);
   drawScorePopups();
   drawUI(ctx, canvas);
-  stage1.draw(ctx, canvas);
+  currentStage.draw(ctx, canvas);
   if (GS.phase === 'stageclear') drawStageClear(ctx, canvas);
   if (GS.phase === 'gameover')   drawGameOver(ctx, canvas);
   if (paused && GS.phase === 'playing') drawPaused(ctx, canvas);
