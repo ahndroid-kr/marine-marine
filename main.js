@@ -58,33 +58,6 @@ function updateBg() {
   }
 }
 
-// ─── Seabed rocks ─────────────────────────────────────────────────────────────
-const rocks = [];
-
-function initSeabed() {
-  rocks.length = 0;
-  const sc = canvas.height / 600;
-  for (let i = 0; i < 16; i++) {
-    rocks.push({
-      x:    Math.random() * canvas.width * 1.6,
-      w:    (Math.random() * 24 + 10) * sc,
-      h:    (Math.random() * 12 +  6) * sc,
-      dark: Math.random() > 0.5,
-    });
-  }
-}
-
-function updateRocks() {
-  const sc = canvas.height / 600;
-  for (const r of rocks) {
-    r.x -= GS.scrollSpeed;
-    if (r.x < -r.w - 10) {
-      r.x = canvas.width + r.w + Math.random() * 80;
-      r.w = (Math.random() * 32 + 12) * sc;
-      r.h = (Math.random() * 18 +  8) * sc;
-    }
-  }
-}
 
 // ─── Plants ───────────────────────────────────────────────────────────────────
 const plants = [];
@@ -161,31 +134,6 @@ function drawBg() {
   ctx.fillStyle = sbG;
   ctx.fillRect(0, sbY, canvas.width, SB_H);
 
-  // Rocks
-  for (const r of rocks) {
-    // 바위 본체 (둥글고 부드럽게)
-    const rg = ctx.createRadialGradient(
-      r.x, sbY - r.h * 0.1, r.h * 0.1,
-      r.x, sbY, r.w * 0.6
-    );
-    if (r.dark) {
-      rg.addColorStop(0, '#1a3a4a');
-      rg.addColorStop(1, '#0a1f2a');
-    } else {
-      rg.addColorStop(0, '#1e4d5a');
-      rg.addColorStop(1, '#0f2d3a');
-    }
-    ctx.beginPath();
-    ctx.ellipse(r.x, sbY, r.w / 2, r.h / 2, 0, 0, Math.PI * 2);
-    ctx.fillStyle = rg;
-    ctx.fill();
-
-    // 하이라이트 (윗부분 살짝 밝게)
-    ctx.beginPath();
-    ctx.ellipse(r.x - r.w * 0.08, sbY - r.h * 0.15, r.w * 0.28, r.h * 0.18, -0.3, 0, Math.PI * 2);
-    ctx.fillStyle = r.dark ? 'rgba(60,120,150,0.18)' : 'rgba(80,160,180,0.22)';
-    ctx.fill();
-  }
 }
 
 // ─── Collision (AABB centre-based, 80% of size) ───────────────────────────────
@@ -254,7 +202,6 @@ function onResize() {
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     initBg();
-    initSeabed();
     initPlants();
     if (player) player.clamp();
   }, 150);
@@ -292,7 +239,6 @@ function update() {
   frame++;
   GS.scrollX += GS.scrollSpeed;
   updateBg();
-  updateRocks();
   updatePlants();
 
   if (GS.invincible > 0) {
