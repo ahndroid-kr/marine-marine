@@ -27,6 +27,7 @@ class MidbossRay {
     this.behaviorPhase   = 'advance'; // 'advance' | 'dash'
     this.fireTimer       = 0;
     this.invincibleTimer = 0; // brief invincibility on dash re-entry
+    this.reentryGrace    = 0; // frames before HP can re-trigger dash after re-entry
     this.lastDashY       = canvas.height / 2;
   }
 
@@ -72,7 +73,9 @@ class MidbossRay {
       const margin = this.h / 2 + 10;
       this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
 
-      if (this.hp <= this.maxHp * 0.5) {
+      if (this.reentryGrace > 0) {
+        this.reentryGrace--;
+      } else if (this.hp <= this.maxHp * 0.5) {
         this.behaviorPhase = 'dash';
         this.lastDashY     = this.y;
         return null;
@@ -103,7 +106,10 @@ class MidbossRay {
         this.y = Math.max(minY, Math.min(maxY,
           this.lastDashY + (Math.random() - 0.5) * 2 * spread));
         this.x               = this.canvas.width + this.w / 2;
-        this.invincibleTimer = 30; // 0.5 s at 60 fps
+        this.behaviorPhase   = 'advance'; // reset to pattern 1 on re-entry
+        this.fireTimer       = 0;
+        this.reentryGrace    = 200; // ~3.3 s grace before HP can re-trigger dash
+        this.invincibleTimer = 30;  // 0.5 s invincibility
       }
     }
 
