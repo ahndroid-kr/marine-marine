@@ -315,6 +315,7 @@ function update() {
       if (b.dead || e.dead || e.dying) continue;
       if (overlap(b, e)) {
         b.dead = true;
+        if (e.invincibleTimer > 0) continue;
         if (e.onHit) e.onHit();
         e.hp--;
         if (e.hp <= 0) {
@@ -339,6 +340,7 @@ function update() {
     for (const e of enemies) {
       if (e.dead || e.dying) continue;
       if (overlap(e, player)) {
+        if (e.invincibleTimer > 0) continue;
         if (e.onHit) e.onHit();
         e.hp = 0;
         GS.score += e.scoreValue;

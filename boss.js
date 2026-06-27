@@ -12,27 +12,29 @@ effectBossHitImg.src = 'assets/images/effect_boss_hit.png';
 // ─── Mid-boss ────────────────────────────────────────────────────────────────
 class MidbossRay {
   constructor(canvas) {
-    this.canvas        = canvas;
-    this.x             = canvas.width + 80;
-    this.y             = canvas.height / 2;
-    this.maxHp         = 20;
-    this.hp            = 20;
-    this.dead          = false;
-    this.dying         = false;
-    this.scoreValue    = 500;
-    this.dropLife      = false;
-    this.t             = 0;
-    this.hitFlash      = 0;
-    this.hitEffects    = [];
-    this.behaviorPhase = 'advance'; // 'advance' | 'dash'
-    this.fireTimer     = 0;
-    this.dashDir       = -1; // -1 = left, 1 = right
+    this.canvas          = canvas;
+    this.x               = canvas.width + 80;
+    this.y               = canvas.height / 2;
+    this.maxHp           = 20;
+    this.hp              = 20;
+    this.dead            = false;
+    this.dying           = false;
+    this.scoreValue      = 500;
+    this.dropLife        = false;
+    this.t               = 0;
+    this.hitFlash        = 0;
+    this.hitEffects      = [];
+    this.behaviorPhase   = 'advance'; // 'advance' | 'dash'
+    this.fireTimer       = 0;
+    this.invincibleTimer = 0; // brief invincibility on dash re-entry
+    this.lastDashY       = canvas.height / 2;
   }
 
   get w() { return Math.round(this.canvas.height * 0.25); }
   get h() { return Math.round(this.canvas.height * 0.25); }
 
   onHit() {
+    if (this.invincibleTimer > 0) return;
     this.hitFlash = 6;
     this.hitEffects.push({
       x: (Math.random() - 0.5) * this.w * 0.5,
@@ -52,7 +54,8 @@ class MidbossRay {
   update() {
     const s = this.canvas.height / 600;
     this.t += 0.025;
-    if (this.hitFlash > 0) this.hitFlash--;
+    if (this.hitFlash        > 0) this.hitFlash--;
+    if (this.invincibleTimer > 0) this.invincibleTimer--;
     this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
 
     if (this.behaviorPhase === 'advance') {
@@ -64,7 +67,7 @@ class MidbossRay {
 
       if (this.hp <= this.maxHp * 0.5) {
         this.behaviorPhase = 'dash';
-        this.dashDir = -1;
+        this.lastDashY     = this.y;
         return null;
       }
 
@@ -76,16 +79,24 @@ class MidbossRay {
         return this._fire8Way();
       }
     } else {
-      // Pattern 2: dash across screen, wrap around to opposite side
+      // Pattern 2: dash left repeatedly; wrap from right with randomised y
       const dashSpd = 14 * s;
-      this.x += dashSpd * this.dashDir;
+      this.x -= dashSpd; // always left
 
-      if (this.dashDir < 0 && this.x < -(this.w / 2)) {
-        this.x = this.canvas.width + this.w / 2;
-        this.dashDir = 1;
-      } else if (this.dashDir > 0 && this.x > this.canvas.width + this.w / 2) {
-        this.x = -(this.w / 2);
-        this.dashDir = -1;
+      // Track y while visible so re-entry lands near last known position
+      if (this.x > 0 && this.x < this.canvas.width) {
+        this.lastDashY = this.y;
+      }
+
+      if (this.x < -(this.w / 2)) {
+        const uiH    = Math.round(this.canvas.height * 0.085);
+        const spread = Math.round(this.canvas.height * 0.15);
+        const minY   = uiH + this.h / 2 + 20;
+        const maxY   = this.canvas.height - this.h / 2 - 20;
+        this.y = Math.max(minY, Math.min(maxY,
+          this.lastDashY + (Math.random() - 0.5) * 2 * spread));
+        this.x               = this.canvas.width + this.w / 2;
+        this.invincibleTimer = 30; // 0.5 s at 60 fps
       }
     }
 
@@ -96,7 +107,8 @@ class MidbossRay {
     const hw = this.w / 2, hh = this.h / 2;
     ctx.save();
     ctx.translate(this.x, this.y);
-    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    if (this.invincibleTimer > 0) ctx.globalAlpha = Math.floor(this.invincibleTimer / 4) % 2 === 0 ? 1.0 : 0.35;
+    else if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
     ctx.drawImage(midbossRayImg, -hw, -hh, this.w, this.h);
     ctx.globalAlpha = 1;
     for (const e of this.hitEffects) {

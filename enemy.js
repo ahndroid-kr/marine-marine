@@ -32,6 +32,7 @@ class Enemy {
     this.dying = false;
     this.t = Math.random() * Math.PI * 2;
     this.hitFlash = 0;
+    if (t === 'squid') this.fireTimer = Math.floor(Math.random() * 120);
   }
 
   get w() { return Math.round(this.canvas.height * ENEMY_DEFS[this.type].wR); }
@@ -45,11 +46,31 @@ class Enemy {
     const uiH = Math.round(this.canvas.height * 0.085);
 
     this.x += this.vx;
-    this.t += 0.055;
-    this.y += Math.sin(this.t) * 0.5 * s;
+
+    if (this.type === 'shrimp') {
+      // 새우: 큰 진폭 sin파 지그재그
+      this.t += 0.09;
+      this.y += Math.sin(this.t) * 4 * s;
+    } else {
+      this.t += 0.055;
+      this.y += Math.sin(this.t) * 0.5 * s;
+    }
+
     this.y = Math.max(uiH + this.h / 2, Math.min(this.canvas.height - sbH - this.h / 2, this.y));
     if (this.x < -(this.w + 20)) this.dead = true;
     if (this.hitFlash > 0) this.hitFlash--;
+
+    // 꼴뚜기: 2초(120프레임)마다 전방 직진탄 1발
+    if (this.type === 'squid' && !this.dead) {
+      this.fireTimer++;
+      if (this.fireTimer >= 120) {
+        this.fireTimer = 0;
+        const spd = 5 * s;
+        return [{ x: this.x - this.w / 2, y: this.y, vx: -spd, vy: 0 }];
+      }
+    }
+
+    return null;
   }
 
   draw(ctx) {
