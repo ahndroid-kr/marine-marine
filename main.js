@@ -67,8 +67,8 @@ function initSeabed() {
   for (let i = 0; i < 16; i++) {
     rocks.push({
       x:    Math.random() * canvas.width * 1.6,
-      w:    (Math.random() * 32 + 12) * sc,
-      h:    (Math.random() * 18 +  8) * sc,
+      w:    (Math.random() * 24 + 10) * sc,
+      h:    (Math.random() * 12 +  6) * sc,
       dark: Math.random() > 0.5,
     });
   }
