@@ -278,17 +278,6 @@ function update() {
     }
   }
 
-  // Stage-clear from stage1 → transition to stage2
-  if (GS.phase === 'stageclear' && currentStage === stage1) {
-    GS.phase     = 'playing';
-    enemies      = [];
-    bullets      = bullets.filter(b => b.fromPlayer);
-    items        = [];
-    currentStage = stage2;
-    currentStage.init();
-    bgImg.src    = 'assets/images/bg_stage2.png';
-  }
-
   currentStage.update(frame, canvas, enemies);
 
   for (const b of bullets) b.update(canvas);
@@ -459,13 +448,33 @@ function handlePauseOrRestart(px, py) {
   return false;
 }
 
+// ─── Stage transition / restart ───────────────────────────────────────────────
+function handleClearOrGameover() {
+  if (GS.phase === 'stageclear' && currentStage === stage1) {
+    // Stage 1 클리어 → Stage 2 시작
+    console.log('[Stage] stage1 clear → stage2 start');
+    GS.phase     = 'playing';
+    enemies      = [];
+    bullets      = bullets.filter(b => b.fromPlayer);
+    items        = [];
+    scorePopups  = [];
+    frame        = 0;
+    currentStage = stage2;
+    currentStage.init();
+    bgImg.src    = 'assets/images/bg_stage2.png';
+  } else {
+    // 게임오버 또는 스테이지2 클리어 → 처음부터 재시작
+    init();
+  }
+}
+
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   const t  = e.touches[0];
   const px = t.clientX, py = t.clientY;
   if (handlePauseOrRestart(px, py)) return;
   if (paused) return;
-  if (GS.phase === 'gameover' || GS.phase === 'stageclear') { init(); return; }
+  if (GS.phase === 'gameover' || GS.phase === 'stageclear') { handleClearOrGameover(); return; }
   player.setTarget(px, py);
 }, { passive: false });
 
@@ -484,7 +493,7 @@ canvas.addEventListener('mousedown', e => {
   const px = e.clientX, py = e.clientY;
   if (handlePauseOrRestart(px, py)) return;
   if (paused) return;
-  if (GS.phase === 'gameover' || GS.phase === 'stageclear') { init(); return; }
+  if (GS.phase === 'gameover' || GS.phase === 'stageclear') { handleClearOrGameover(); return; }
   player.setTarget(px, py);
 });
 canvas.addEventListener('mousemove', e => {
