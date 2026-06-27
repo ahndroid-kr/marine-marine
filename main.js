@@ -335,7 +335,26 @@ function update() {
   }
 
   // Enemy body vs player
-  if (GS.invincible === 0 && player.hitTimer === 0) {
+  if (GS.invincible > 0) {
+    for (const e of enemies) {
+      if (e.dead || e.dying) continue;
+      if (overlap(e, player)) {
+        if (e.onHit) e.onHit();
+        e.hp = 0;
+        GS.score += e.scoreValue;
+        if (e.onDeath) e.onDeath();
+        else e.dead = true;
+        if (e.getDrops) {
+          for (const d of e.getDrops()) items.push(new Item(d.x, d.y, d.type, d.sizeScale));
+        } else if (e.dropLife) {
+          items.push(new Item(e.x, e.y, 'life'));
+        } else {
+          const drop = rollDrop(e.x, e.y);
+          if (drop) items.push(drop);
+        }
+      }
+    }
+  } else if (player.hitTimer === 0) {
     for (const e of enemies) {
       if (e.dead || e.dying) continue;
       if (overlap(e, player)) {
