@@ -184,7 +184,7 @@ function drawPaused(ctx, canvas) {
 }
 
 // ─── Stage clear ─────────────────────────────────────────────────────────────
-function drawStageClear(ctx, canvas) {
+function drawStageClear(ctx, canvas, isLastStage = false) {
   ctx.save();
   ctx.fillStyle = 'rgba(0, 5, 15, 0.78)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -212,8 +212,30 @@ function drawStageClear(ctx, canvas) {
   ctx.font        = `${subSz}px 'Press Start 2P', monospace`;
   ctx.fillStyle   = 'rgba(255,255,255,0.80)';
   ctx.globalAlpha = 0.65 + 0.35 * Math.sin(Date.now() / 430);
-  ctx.fillText('TAP OR CLICK TO PLAY AGAIN', cx, cy + titleSz * 1.20);
+  if (isLastStage) {
+    ctx.fillText('TAP OR CLICK TO PLAY AGAIN', cx, cy + titleSz * 1.20);
+  } else {
+    ctx.fillText('NEXT STAGE...', cx, cy + titleSz * 1.20);
+  }
   ctx.globalAlpha = 1;
+
+  // 자동 전환 진행 바 (마지막 스테이지 제외)
+  if (!isLastStage) {
+    const barW   = Math.round(canvas.width * 0.50);
+    const barH   = Math.round(canvas.height * 0.008);
+    const barX   = cx - barW / 2;
+    const barY   = cy + titleSz * 1.70;
+    const pct    = Math.min(GS.clearTimer / 150, 1);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.15)';
+    ctx.fillRect(barX, barY, barW, barH);
+
+    ctx.fillStyle   = '#ffe066';
+    ctx.shadowColor = '#ffcc00';
+    ctx.shadowBlur  = 8;
+    ctx.fillRect(barX, barY, barW * pct, barH);
+    ctx.shadowBlur  = 0;
+  }
 
   ctx.restore();
 }

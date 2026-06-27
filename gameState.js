@@ -9,4 +9,5 @@ const GS = {
   petCount: 0,      // 0-2
   invincible: 0,    // countdown frames (300 = 5 s)
   giant: false,
+  clearTimer: 0,    // frames elapsed on stageclear screen
 };

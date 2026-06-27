@@ -228,8 +228,9 @@ function init() {
   GS.powerLevel = 0;
   GS.shield     = 0;
   GS.petCount   = 0;
-  GS.invincible = 0;
-  GS.giant      = false;
+  GS.invincible  = 0;
+  GS.giant       = false;
+  GS.clearTimer  = 0;
   currentStage = stage1;
   currentStage.init();
   bgImg.src = 'assets/images/bg_stage1.png';
@@ -238,7 +239,19 @@ function init() {
 }
 
 // ─── Update ───────────────────────────────────────────────────────────────────
+// Auto-advance STAGE CLEAR after 2.5 s; last stage waits for tap
+const LAST_STAGE   = stage2; // update when more stages are added
+const CLEAR_FRAMES = 150;    // 2.5 s at 60 fps
+
 function update() {
+  if (GS.phase === 'stageclear') {
+    GS.clearTimer++;
+    if (currentStage !== LAST_STAGE && GS.clearTimer >= CLEAR_FRAMES) {
+      GS.clearTimer = 0;
+      handleClearOrGameover();
+    }
+    return;
+  }
   if (paused || GS.phase !== 'playing') return;
 
   frame++;
@@ -429,7 +442,7 @@ function draw() {
   drawScorePopups();
   drawUI(ctx, canvas);
   currentStage.draw(ctx, canvas);
-  if (GS.phase === 'stageclear') drawStageClear(ctx, canvas);
+  if (GS.phase === 'stageclear') drawStageClear(ctx, canvas, currentStage === LAST_STAGE);
   if (GS.phase === 'gameover')   drawGameOver(ctx, canvas);
   if (paused && GS.phase === 'playing') drawPaused(ctx, canvas);
 }
@@ -453,15 +466,16 @@ function handleClearOrGameover() {
   if (GS.phase === 'stageclear' && currentStage === stage1) {
     // Stage 1 클리어 → Stage 2 시작
     console.log('[Stage] stage1 clear → stage2 start');
-    GS.phase     = 'playing';
-    enemies      = [];
-    bullets      = bullets.filter(b => b.fromPlayer);
-    items        = [];
-    scorePopups  = [];
-    frame        = 0;
-    currentStage = stage2;
+    GS.phase      = 'playing';
+    GS.clearTimer = 0;
+    enemies       = [];
+    bullets       = bullets.filter(b => b.fromPlayer);
+    items         = [];
+    scorePopups   = [];
+    frame         = 0;
+    currentStage  = stage2;
     currentStage.init();
-    bgImg.src    = 'assets/images/bg_stage2.png';
+    bgImg.src     = 'assets/images/bg_stage2.png';
   } else {
     // 게임오버 또는 스테이지2 클리어 → 처음부터 재시작
     init();
