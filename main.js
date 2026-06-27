@@ -7,6 +7,7 @@ const keys = {};
 let paused           = false;
 let pauseBtnBounds   = { x: 0, y: 0, w: 0, h: 0 };
 let restartBtnBounds = { x: 0, y: 0, w: 0, h: 0 };
+let titleBtnBounds   = [];
 
 function inRect(px, py, r) {
   return px >= r.x && px <= r.x + r.w && py >= r.y && py <= r.y + r.h;
@@ -210,17 +211,35 @@ function onResize() {
   }, 150);
 }
 
-// ─── Init ─────────────────────────────────────────────────────────────────────
+// ─── Stage definitions (add entries here to extend to future stages) ──────────
+const STAGE_DEFS = [
+  { label: 'STAGE 1', stageObj: stage1, bg: 'assets/images/bg_stage1.png' },
+  { label: 'STAGE 2', stageObj: stage2, bg: 'assets/images/bg_stage2.png' },
+];
+const STAGE_LABELS = STAGE_DEFS.map(d => d.label);
+
+// ─── Init (title screen) ──────────────────────────────────────────────────────
 function init() {
-  paused = false;
+  paused        = false;
+  GS.phase      = 'title';
+  GS.clearTimer = 0;
+  bgImg.src     = 'assets/images/bg_stage1.png';
   resize();
-  player      = new Player(canvas);
-  bullets      = [];
-  enemies      = [];
-  items        = [];
-  pets         = [];
-  scorePopups  = [];
-  frame        = 0;
+  initBg();
+  initPlants();
+}
+
+// ─── Start a specific stage (called from title screen) ────────────────────────
+function startStage(num) {
+  const def     = STAGE_DEFS[num - 1];
+  paused        = false;
+  player        = new Player(canvas);
+  bullets       = [];
+  enemies       = [];
+  items         = [];
+  pets          = [];
+  scorePopups   = [];
+  frame         = 0;
   GS.score      = 0;
   GS.lives      = 3;
   GS.phase      = 'playing';
@@ -228,22 +247,28 @@ function init() {
   GS.powerLevel = 0;
   GS.shield     = 0;
   GS.petCount   = 0;
-  GS.invincible  = 0;
-  GS.giant       = false;
-  GS.clearTimer  = 0;
-  currentStage = stage1;
+  GS.invincible = 0;
+  GS.giant      = false;
+  GS.clearTimer = 0;
+  currentStage  = def.stageObj;
   currentStage.init();
-  bgImg.src = 'assets/images/bg_stage1.png';
+  bgImg.src     = def.bg;
   initBg();
   initPlants();
 }
 
 // ─── Update ───────────────────────────────────────────────────────────────────
 // Auto-advance STAGE CLEAR after 2.5 s; last stage waits for tap
-const LAST_STAGE   = stage2; // update when more stages are added
+const LAST_STAGE   = STAGE_DEFS[STAGE_DEFS.length - 1].stageObj;
 const CLEAR_FRAMES = 150;    // 2.5 s at 60 fps
 
 function update() {
+  if (GS.phase === 'title') {
+    GS.scrollX += GS.scrollSpeed;
+    updateBg();
+    updatePlants();
+    return;
+  }
   if (GS.phase === 'stageclear') {
     GS.clearTimer++;
     if (currentStage !== LAST_STAGE && GS.clearTimer >= CLEAR_FRAMES) {
@@ -433,6 +458,11 @@ function drawScorePopups() {
 
 // ─── Draw ─────────────────────────────────────────────────────────────────────
 function draw() {
+  if (GS.phase === 'title') {
+    drawBg();
+    drawTitle(ctx, canvas, STAGE_LABELS, titleBtnBounds);
+    return;
+  }
   drawBg();
   items.forEach(item => item.draw(ctx));
   enemies.forEach(e => e.draw(ctx));
@@ -486,6 +516,12 @@ canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   const t  = e.touches[0];
   const px = t.clientX, py = t.clientY;
+  if (GS.phase === 'title') {
+    for (let i = 0; i < titleBtnBounds.length; i++) {
+      if (inRect(px, py, titleBtnBounds[i])) { startStage(i + 1); return; }
+    }
+    return;
+  }
   if (handlePauseOrRestart(px, py)) return;
   if (paused) return;
   if (GS.phase === 'gameover' || GS.phase === 'stageclear') { handleClearOrGameover(); return; }
@@ -505,13 +541,19 @@ let mouseDown = false;
 canvas.addEventListener('mousedown', e => {
   mouseDown = true;
   const px = e.clientX, py = e.clientY;
+  if (GS.phase === 'title') {
+    for (let i = 0; i < titleBtnBounds.length; i++) {
+      if (inRect(px, py, titleBtnBounds[i])) { startStage(i + 1); return; }
+    }
+    return;
+  }
   if (handlePauseOrRestart(px, py)) return;
   if (paused) return;
   if (GS.phase === 'gameover' || GS.phase === 'stageclear') { handleClearOrGameover(); return; }
   player.setTarget(px, py);
 });
 canvas.addEventListener('mousemove', e => {
-  if (mouseDown && GS.phase === 'playing' && !paused) player.setTarget(e.clientX, e.clientY);
+  if (mouseDown && GS.phase === 'playing' && !paused && player) player.setTarget(e.clientX, e.clientY);
 });
 canvas.addEventListener('mouseup', () => { mouseDown = false; });
 

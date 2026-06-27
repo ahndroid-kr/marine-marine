@@ -240,6 +240,68 @@ function drawStageClear(ctx, canvas, isLastStage = false) {
   ctx.restore();
 }
 
+// ─── Title / stage select ─────────────────────────────────────────────────────
+function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
+  btnBoundsArr.length = 0;
+
+  ctx.save();
+
+  // Dark overlay over scrolling bg
+  ctx.fillStyle = 'rgba(0, 5, 20, 0.65)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const cx = canvas.width  / 2;
+  const cy = canvas.height / 2;
+
+  // ── Title text ───────────────────────────────────────────────────────────
+  const titleSz = Math.round(Math.min(canvas.width * 0.09, canvas.height * 0.065));
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.font         = `${titleSz}px 'Press Start 2P', monospace`;
+  ctx.fillStyle    = '#00e5ff';
+  ctx.shadowColor  = '#00e5ff';
+  ctx.shadowBlur   = 28;
+  ctx.fillText('MARINE', cx, cy - titleSz * 1.15);
+  ctx.fillText('MARINE', cx, cy - titleSz * 0.05);
+  ctx.shadowBlur   = 0;
+
+  // ── "SELECT STAGE" label ─────────────────────────────────────────────────
+  const subSz = Math.round(canvas.height * 0.014);
+  ctx.font      = `${subSz}px 'Press Start 2P', monospace`;
+  ctx.fillStyle = 'rgba(150, 220, 255, 0.70)';
+  ctx.fillText('SELECT STAGE', cx, cy + titleSz * 0.85);
+
+  // ── Stage buttons ────────────────────────────────────────────────────────
+  const btnW   = Math.round(Math.min(canvas.width * 0.24, canvas.height * 0.22));
+  const btnH   = Math.round(canvas.height * 0.072);
+  const btnSz  = Math.round(canvas.height * 0.018);
+  const gap    = Math.round(canvas.width  * 0.04);
+  const totalW = stageLabels.length * btnW + (stageLabels.length - 1) * gap;
+  const startX = cx - totalW / 2;
+  const btnY   = cy + titleSz * 1.45;
+
+  stageLabels.forEach((label, i) => {
+    const bx = startX + i * (btnW + gap);
+    btnBoundsArr.push({ x: bx, y: btnY, w: btnW, h: btnH });
+
+    ctx.fillStyle   = 'rgba(0, 229, 255, 0.08)';
+    ctx.strokeStyle = '#00e5ff';
+    ctx.lineWidth   = 2;
+    ctx.shadowColor = '#00e5ff';
+    ctx.shadowBlur  = 14;
+    roundRect(ctx, bx, btnY, btnW, btnH, 6);
+    ctx.fill();
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+
+    ctx.font      = `${btnSz}px 'Press Start 2P', monospace`;
+    ctx.fillStyle = '#00e5ff';
+    ctx.fillText(label, bx + btnW / 2, btnY + btnH / 2);
+  });
+
+  ctx.restore();
+}
+
 // ─── Game over ────────────────────────────────────────────────────────────────
 function drawGameOver(ctx, canvas) {
   ctx.save();
