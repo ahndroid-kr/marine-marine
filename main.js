@@ -310,8 +310,9 @@ function update() {
   // Player fire
   const fired = player.update();
   if (fired) {
+    const isLarge = GS.powerLevel >= 2;
     for (const cfg of fired) {
-      bullets.push(new Bullet(player.x + player.w / 2, player.y, cfg.vx, cfg.vy, true));
+      bullets.push(new Bullet(player.x + player.w / 2, player.y, cfg.vx, cfg.vy, true, false, isLarge));
     }
   }
 
@@ -319,8 +320,9 @@ function update() {
   for (const p of pets) {
     const petFired = p.update(player);
     if (petFired) {
+      const isLarge = GS.powerLevel >= 2;
       for (const cfg of petFired) {
-        bullets.push(new Bullet(p.x + p.w / 2, p.y, cfg.vx, cfg.vy, true));
+        bullets.push(new Bullet(p.x + p.w / 2, p.y, cfg.vx, cfg.vy, true, false, isLarge));
       }
     }
   }

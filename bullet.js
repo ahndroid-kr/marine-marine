@@ -1,23 +1,30 @@
+const bulletBubbleImg = new Image();
+bulletBubbleImg.src = 'assets/images/bullet_bubble.png';
+
+const bulletBubbleLargeImg = new Image();
+bulletBubbleLargeImg.src = 'assets/images/bullet_bubble_large.png';
+
 // canvas is the global from main.js — available at call-time
 class Bullet {
-  constructor(x, y, vx, vy, fromPlayer, fromBoss = false) {
+  constructor(x, y, vx, vy, fromPlayer, fromBoss = false, large = false) {
     this.x = x;
     this.y = y;
     this.vx = vx;
     this.vy = vy;
     this.fromPlayer = fromPlayer;
     this.fromBoss = fromBoss;
+    this.large = large;
     this.dead = false;
   }
 
   // Dynamic sizing relative to canvas height
   get w() {
-    if (this.fromPlayer) return Math.round(canvas.height * 0.036);
+    if (this.fromPlayer) return Math.round(canvas.height * (this.large ? 0.052 : 0.036));
     if (this.fromBoss)   return Math.round(canvas.height * 0.016);
     return Math.round(canvas.height * 0.022);
   }
   get h() {
-    if (this.fromPlayer) return Math.round(canvas.height * 0.010);
+    if (this.fromPlayer) return Math.round(canvas.height * (this.large ? 0.052 : 0.036));
     if (this.fromBoss)   return Math.round(canvas.height * 0.016);
     return Math.round(canvas.height * 0.022);
   }
@@ -35,27 +42,8 @@ class Bullet {
     ctx.translate(this.x, this.y);
 
     if (this.fromPlayer) {
-      // Torpedo body
-      ctx.beginPath();
-      ctx.ellipse(0, 0, this.w / 2, this.h / 2, 0, 0, Math.PI * 2);
-      ctx.fillStyle = '#d4a820';
-      ctx.fill();
-      // Pointed nose
-      ctx.beginPath();
-      ctx.moveTo(this.w / 2, 0);
-      ctx.lineTo(this.w / 2 - 5, -(this.h / 2 - 1));
-      ctx.lineTo(this.w / 2 - 5, this.h / 2 - 1);
-      ctx.closePath();
-      ctx.fillStyle = '#f0c040';
-      ctx.fill();
-      // Bubble trail
-      ctx.beginPath();
-      ctx.moveTo(-this.w / 2, 0);
-      ctx.lineTo(-this.w / 2 - 13, -2);
-      ctx.lineTo(-this.w / 2 - 13, 2);
-      ctx.closePath();
-      ctx.fillStyle = 'rgba(150, 220, 255, 0.5)';
-      ctx.fill();
+      const img = this.large ? bulletBubbleLargeImg : bulletBubbleImg;
+      ctx.drawImage(img, -this.w / 2, -this.h / 2, this.w, this.h);
     } else if (this.fromBoss) {
       // Boss bullet: purple/pink magic orb
       const r = this.w / 2;
