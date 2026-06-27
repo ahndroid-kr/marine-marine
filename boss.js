@@ -257,7 +257,7 @@ class BossPuffer {
 
     // Fire pattern based on attack phase
     const ap       = this.attackPhase;
-    const fireRate = ap === 1 ? 120 : ap === 2 ? 90 : 60;
+    const fireRate = ap === 1 ? 150 : ap === 2 ? 90 : 60;
     this.fireTimer++;
     if (this.fireTimer >= fireRate) {
       this.fireTimer = 0;

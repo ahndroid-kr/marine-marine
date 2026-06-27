@@ -1,17 +1,26 @@
 // canvas is the global from main.js — available at call-time
 class Bullet {
-  constructor(x, y, vx, vy, fromPlayer) {
+  constructor(x, y, vx, vy, fromPlayer, fromBoss = false) {
     this.x = x;
     this.y = y;
     this.vx = vx;
     this.vy = vy;
     this.fromPlayer = fromPlayer;
+    this.fromBoss = fromBoss;
     this.dead = false;
   }
 
   // Dynamic sizing relative to canvas height
-  get w() { return Math.round(canvas.height * (this.fromPlayer ? 0.036 : 0.022)); }
-  get h() { return Math.round(canvas.height * (this.fromPlayer ? 0.010 : 0.022)); }
+  get w() {
+    if (this.fromPlayer) return Math.round(canvas.height * 0.036);
+    if (this.fromBoss)   return Math.round(canvas.height * 0.016);
+    return Math.round(canvas.height * 0.022);
+  }
+  get h() {
+    if (this.fromPlayer) return Math.round(canvas.height * 0.010);
+    if (this.fromBoss)   return Math.round(canvas.height * 0.016);
+    return Math.round(canvas.height * 0.022);
+  }
 
   update(c) {
     this.x += this.vx;
@@ -47,6 +56,19 @@ class Bullet {
       ctx.closePath();
       ctx.fillStyle = 'rgba(150, 220, 255, 0.5)';
       ctx.fill();
+    } else if (this.fromBoss) {
+      // Boss bullet: purple/pink magic orb
+      const r = this.w / 2;
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+      grad.addColorStop(0, '#FF85C2');
+      grad.addColorStop(1, '#9B59B6');
+      ctx.shadowColor = '#C77DFF';
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.shadowBlur = 0;
     } else {
       // Enemy bullet: glowing red orb
       const r = this.w / 2;

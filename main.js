@@ -334,8 +334,9 @@ function update() {
   for (const e of enemies) {
     const shots = e.update();
     if (shots) {
+      const isBoss = e instanceof BossPuffer;
       for (const s of shots) {
-        bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false));
+        bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false, isBoss));
       }
     }
   }
