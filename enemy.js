@@ -207,21 +207,26 @@ class EnemyFilefish {
   }
 }
 
-// EnemyFlounder (광어): 상하 교차 돌진 반복, 공격 없음
+// EnemyFlounder (광어): 대기 → 예비동작 → 돌진 → 반복
 class EnemyFlounder {
   constructor(canvas) {
-    this.canvas = canvas;
-    this.hp = 2;
+    this.canvas     = canvas;
+    this.hp         = 2;
     this.scoreValue = 120;
-    this.dead = false;
-    this.dying = false;
+    this.dead       = false;
+    this.dying      = false;
+
     const s = canvas.height / 600;
-    this.fromTop = Math.random() > 0.5;
-    this.x = canvas.width + this.w;
-    this.y = this.fromTop ? -this.h : canvas.height + this.h;
-    this.vy = (this.fromTop ? 1 : -1) * (3.5 + Math.random() * 1.5) * s;
-    this.vx = -(0.5 + Math.random() * 0.4) * s;
-    this.hitFlash = 0;
+    this.fromTop   = Math.random() > 0.5;
+    this.x         = canvas.width * (0.35 + Math.random() * 0.45);
+    this.y         = this.fromTop ? -this.h : canvas.height + this.h;
+    this.vx        = -(0.4 + Math.random() * 0.3) * s;
+    this.vy        = 0;
+    this._rushSpd  = (5.5 + Math.random() * 2) * s;
+    this.state     = 'waiting'; // 'waiting' | 'windup' | 'rushing'
+    this.stateTimer = 0;
+    this.waitDur   = 25 + Math.floor(Math.random() * 20);
+    this.hitFlash  = 0;
   }
 
   get w() { return Math.round(this.canvas.height * 0.169); }
@@ -229,20 +234,57 @@ class EnemyFlounder {
 
   onHit() { this.hitFlash = 4; }
 
+  _edgeY() {
+    // 예비동작 시 화면 가장자리에서 절반만 보이는 위치
+    return this.fromTop ? 0 : this.canvas.height;
+  }
+
   update() {
     this.x += this.vx;
-    this.y += this.vy;
-
+    if (this.x < -(this.w + 20)) { this.dead = true; return null; }
     if (this.hitFlash > 0) this.hitFlash--;
+    this.stateTimer++;
 
-    // 반대편 이탈 시 시작 위치로 리셋해 반복 돌진
-    if (this.vy > 0 && this.y > this.canvas.height + this.h) {
-      this.y = -this.h;
-    } else if (this.vy < 0 && this.y < -this.h) {
-      this.y = this.canvas.height + this.h;
+    if (this.state === 'waiting') {
+      // 화면 바깥 대기 — waitDur 후 가장자리로 이동해 예비동작
+      if (this.stateTimer >= this.waitDur) {
+        this.y          = this._edgeY();
+        this.state      = 'windup';
+        this.stateTimer = 0;
+      }
+
+    } else if (this.state === 'windup') {
+      // 0.3초(18프레임) 예비동작: 가장자리에서 살짝 진동
+      const wobble = Math.sin(this.stateTimer * 1.6) * (this.canvas.height * 0.003);
+      this.y = this._edgeY() + (this.fromTop ? wobble : -wobble);
+      if (this.stateTimer >= 18) {
+        this.vy         = this.fromTop ? this._rushSpd : -this._rushSpd;
+        this.state      = 'rushing';
+        this.stateTimer = 0;
+      }
+
+    } else {
+      // 고속 돌진
+      this.y += this.vy;
+      if (this.vy > 0 && this.y > this.canvas.height + this.h) {
+        // 아래로 이탈 → 위쪽 대기로 리셋
+        this.fromTop    = true;
+        this.y          = -this.h;
+        this.vy         = 0;
+        this.state      = 'waiting';
+        this.stateTimer = 0;
+        this.waitDur    = 20 + Math.floor(Math.random() * 25);
+      } else if (this.vy < 0 && this.y < -this.h) {
+        // 위로 이탈 → 아래쪽 대기로 리셋
+        this.fromTop    = false;
+        this.y          = this.canvas.height + this.h;
+        this.vy         = 0;
+        this.state      = 'waiting';
+        this.stateTimer = 0;
+        this.waitDur    = 20 + Math.floor(Math.random() * 25);
+      }
     }
 
-    if (this.x < -(this.w + 20)) this.dead = true;
     return null;
   }
 

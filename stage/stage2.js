@@ -2,19 +2,17 @@ const bgStage2Img = new Image();
 bgStage2Img.src = 'assets/images/bg_stage2.png';
 
 const stage2 = {
-  wave:          'wave1',
-  waveTimer:     0,
-  spawnTimer:    0,
-  burstsDone:    0,       // wave1 burst counter
-  midbossRef:    null,
-  bossRef:       null,
-  warning:       null,
+  wave:       'wave1',
+  waveTimer:  0,
+  spawnTimer: 0,
+  midbossRef: null,
+  bossRef:    null,
+  warning:    null,
 
   init() {
     this.wave       = 'wave1';
     this.waveTimer  = 0;
     this.spawnTimer = 0;
-    this.burstsDone = 0;
     this.midbossRef = null;
     this.bossRef    = null;
     this.warning    = null;
@@ -26,24 +24,21 @@ const stage2 = {
     this.spawnTimer = 0;
   },
 
-  // ── spawn helpers ─────────────────────────────────────────────────────────
-  _spawnPorgyRow(canvas, enemies, count = 3) {
-    const uiH = Math.round(canvas.height * 0.085);
-    const sbH = Math.round(canvas.height * 0.035);
-    const gap = (canvas.height - uiH - sbH) / (count + 1);
-    for (let i = 0; i < count; i++) {
-      const e = new EnemyPorgy(canvas);
-      e.y = uiH + gap * (i + 1);
-      enemies.push(e);
-    }
-  },
-
-  // ── wave1: 도미 무리 × 3 (900 frames) ────────────────────────────────────
+  // ── wave1: 도미 1~2마리 개별 등장 (900 frames) ───────────────────────────
   _wave1(canvas, enemies) {
-    const burstAt = [120, 420, 720];
-    if (this.burstsDone < burstAt.length && this.waveTimer === burstAt[this.burstsDone]) {
-      this._spawnPorgyRow(canvas, enemies, 3);
-      this.burstsDone++;
+    if (this.spawnTimer >= 150) {
+      this.spawnTimer = 0;
+      enemies.push(new EnemyPorgy(canvas));
+      // 40% 확률로 1마리 추가 (y 오프셋 다르게)
+      if (Math.random() < 0.4) {
+        const e2  = new EnemyPorgy(canvas);
+        const uiH = Math.round(canvas.height * 0.085);
+        const sbH = Math.round(canvas.height * 0.035);
+        const off = canvas.height * 0.18 * (Math.random() > 0.5 ? 1 : -1);
+        e2.y = Math.max(uiH + e2.h / 2,
+               Math.min(canvas.height - sbH - e2.h / 2, e2.y + off));
+        enemies.push(e2);
+      }
     }
     if (this.waveTimer >= 900) this._next('wave2');
   },
@@ -65,14 +60,12 @@ const stage2 = {
       const f1 = new EnemyFlounder(canvas);
       f1.fromTop = true;
       f1.y       = -f1.h;
-      f1.vy      = Math.abs(f1.vy);
       enemies.push(f1);
 
       const f2 = new EnemyFlounder(canvas);
       f2.fromTop = false;
       f2.y       = canvas.height + f2.h;
-      f2.vy      = -Math.abs(f2.vy);
-      f2.x       = f1.x - 50;
+      f2.x       = f1.x - 60;
       enemies.push(f2);
     }
     if (this.waveTimer >= 720) this._next('wave4');
