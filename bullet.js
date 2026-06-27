@@ -21,12 +21,12 @@ class Bullet {
   get w() {
     if (this.fromPlayer) return Math.round(canvas.height * (this.large ? 0.052 : 0.036));
     if (this.fromBoss)   return Math.round(canvas.height * 0.016);
-    return Math.round(canvas.height * 0.022);
+    return Math.round(canvas.height * 0.014);
   }
   get h() {
     if (this.fromPlayer) return Math.round(canvas.height * (this.large ? 0.052 : 0.036));
     if (this.fromBoss)   return Math.round(canvas.height * 0.016);
-    return Math.round(canvas.height * 0.022);
+    return Math.round(canvas.height * 0.014);
   }
 
   update(c) {
@@ -58,15 +58,15 @@ class Bullet {
       ctx.fill();
       ctx.shadowBlur = 0;
     } else {
-      // Enemy bullet: glowing red orb
+      // Enemy bullet: small mint/sky orb
       const r = this.w / 2;
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+      grad.addColorStop(0, '#FFFFFF');
+      grad.addColorStop(1, '#7FD4F0');
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
-      ctx.fillStyle = '#ff3300';
-      ctx.shadowColor = '#ff2200';
-      ctx.shadowBlur = Math.round(canvas.height * 0.015);
+      ctx.fillStyle = grad;
       ctx.fill();
-      ctx.shadowBlur = 0;
     }
 
     ctx.restore();
