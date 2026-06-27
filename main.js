@@ -209,8 +209,10 @@ function applyItem(type, px, py) {
 
 // ─── Resize ───────────────────────────────────────────────────────────────────
 function resize() {
-  canvas.width  = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width        = window.innerWidth;
+  canvas.height       = window.innerHeight;
+  canvas.style.width  = canvas.width  + 'px';
+  canvas.style.height = canvas.height + 'px';
   if (player) player.clamp();
 }
 
@@ -360,7 +362,26 @@ function update() {
     for (const e of enemies) {
       if (e.dead || e.dying) continue;
       if (overlap(e, player)) {
-        e.dead = true;
+        if (e instanceof MidbossRay || e instanceof BossPuffer) {
+          // Boss body contact: deal HP damage (not instant kill)
+          if (e.onHit) e.onHit();
+          e.hp--;
+          if (e.hp <= 0) {
+            GS.score += e.scoreValue;
+            if (e.onDeath) e.onDeath();
+            else e._dead = true;
+            if (e.getDrops) {
+              for (const d of e.getDrops()) items.push(new Item(d.x, d.y, d.type, d.sizeScale));
+            } else if (e.dropLife) {
+              items.push(new Item(e.x, e.y, 'life'));
+            } else {
+              const drop = rollDrop(e.x, e.y);
+              if (drop) items.push(drop);
+            }
+          }
+        } else {
+          e.dead = true;
+        }
         if (player.hit() && GS.lives <= 0) GS.phase = 'gameover';
         break;
       }

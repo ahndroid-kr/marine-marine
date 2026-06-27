@@ -17,7 +17,7 @@ class MidbossRay {
     this.y               = canvas.height / 2;
     this.maxHp           = 20;
     this.hp              = 20;
-    this.dead            = false;
+    this._dead           = false; // backing field — use setter to guard dash phase
     this.dying           = false;
     this.scoreValue      = 500;
     this.dropLife        = false;
@@ -28,6 +28,13 @@ class MidbossRay {
     this.fireTimer       = 0;
     this.invincibleTimer = 0; // brief invincibility on dash re-entry
     this.lastDashY       = canvas.height / 2;
+  }
+
+  // Block instant-kill while dashing with HP remaining
+  get dead() { return this._dead; }
+  set dead(v) {
+    if (v && this.hp > 0 && this.behaviorPhase === 'dash') return;
+    this._dead = v;
   }
 
   get w() { return Math.round(this.canvas.height * 0.25); }
@@ -71,7 +78,7 @@ class MidbossRay {
         return null;
       }
 
-      if (this.x < -(this.w + 40)) { this.dead = true; return null; }
+      if (this.x < -(this.w + 40)) { this._dead = true; return null; }
 
       this.fireTimer++;
       if (this.fireTimer >= 180) {
