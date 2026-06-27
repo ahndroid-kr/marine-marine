@@ -163,9 +163,27 @@ function drawBg() {
 
   // Rocks
   for (const r of rocks) {
+    // 바위 본체 (둥글고 부드럽게)
+    const rg = ctx.createRadialGradient(
+      r.x, sbY - r.h * 0.1, r.h * 0.1,
+      r.x, sbY, r.w * 0.6
+    );
+    if (r.dark) {
+      rg.addColorStop(0, '#1a3a4a');
+      rg.addColorStop(1, '#0a1f2a');
+    } else {
+      rg.addColorStop(0, '#1e4d5a');
+      rg.addColorStop(1, '#0f2d3a');
+    }
     ctx.beginPath();
     ctx.ellipse(r.x, sbY, r.w / 2, r.h / 2, 0, 0, Math.PI * 2);
-    ctx.fillStyle = r.dark ? '#101a12' : '#182818';
+    ctx.fillStyle = rg;
+    ctx.fill();
+
+    // 하이라이트 (윗부분 살짝 밝게)
+    ctx.beginPath();
+    ctx.ellipse(r.x - r.w * 0.08, sbY - r.h * 0.15, r.w * 0.28, r.h * 0.18, -0.3, 0, Math.PI * 2);
+    ctx.fillStyle = r.dark ? 'rgba(60,120,150,0.18)' : 'rgba(80,160,180,0.22)';
     ctx.fill();
   }
 }
