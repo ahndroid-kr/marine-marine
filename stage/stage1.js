@@ -55,12 +55,12 @@ const stage1 = {
 
     // 6. Normal enemy spawning (runs even while midboss is alive)
     this.spawnTimer++;
-    const interval = Math.max(54, 122 - Math.floor(GS.score / 400) * 6);
+    const interval = Math.max(90, 180 - Math.floor(GS.score / 600) * 6);
     if (this.spawnTimer >= interval) {
       this.spawnTimer = 0;
       const types = ['squid', 'shrimp', 'hairtail'];
       enemies.push(new Enemy(canvas, types[Math.floor(Math.random() * types.length)]));
-      if (GS.score > 800 && Math.random() < 0.35) {
+      if (GS.score > 1500 && Math.random() < 0.25) {
         const type2 = types[Math.floor(Math.random() * types.length)];
         const e2 = new Enemy(canvas, type2);
         e2.y = Math.max(60, Math.min(canvas.height - 60, e2.y + (Math.random() > 0.5 ? 85 : -85)));
