@@ -265,9 +265,9 @@ function startStage(num) {
 }
 
 // ─── Update ───────────────────────────────────────────────────────────────────
-// Auto-advance STAGE CLEAR after 2.5 s; last stage waits for tap
-const LAST_STAGE   = STAGE_DEFS[STAGE_DEFS.length - 1].stageObj;
-const CLEAR_FRAMES = 150;    // 2.5 s at 60 fps
+const LAST_STAGE        = STAGE_DEFS[STAGE_DEFS.length - 1].stageObj;
+const CLEAR_MIN_FRAMES  = 120;   // 2s minimum wait before auto-transition
+const CLEAR_MAX_FRAMES  = 600;   // 10s safety cap
 
 function update() {
   if (GS.phase === 'title') {
@@ -279,9 +279,36 @@ function update() {
   }
   if (GS.phase === 'stageclear') {
     GS.clearTimer++;
-    if (currentStage !== LAST_STAGE && GS.clearTimer >= CLEAR_FRAMES) {
-      GS.clearTimer = 0;
-      handleClearOrGameover();
+    GS.scrollX += GS.scrollSpeed;
+    updateBg();
+    updatePlants();
+    updateDecos(canvas);
+
+    // Keep player moveable so items can be collected
+    const ks = Math.round(canvas.height * 0.009);
+    if (keys['ArrowUp']    || keys['w'] || keys['W']) player.targetY -= ks;
+    if (keys['ArrowDown']  || keys['s'] || keys['S']) player.targetY += ks;
+    if (keys['ArrowLeft']  || keys['a'] || keys['A']) player.targetX -= ks;
+    if (keys['ArrowRight'] || keys['d'] || keys['D']) player.targetX += ks;
+    player.update();
+
+    for (const item of items) item.update();
+    for (const item of items) {
+      if (item.dead) continue;
+      if (overlap(item, player)) {
+        item.dead = true;
+        applyItem(item.type, player.x, player.y);
+      }
+    }
+    items = items.filter(item => !item.dead);
+
+    if (currentStage !== LAST_STAGE) {
+      const allGone  = items.length === 0 && GS.clearTimer >= CLEAR_MIN_FRAMES;
+      const timedOut = GS.clearTimer >= CLEAR_MAX_FRAMES;
+      if (allGone || timedOut) {
+        GS.clearTimer = 0;
+        handleClearOrGameover();
+      }
     }
     return;
   }
