@@ -85,10 +85,15 @@ function drawUI(ctx, canvas) {
   }
 
   // ── Hearts ───────────────────────────────────────────────────────────────
-  const totalHeartW = GS.lives * HEART + Math.max(0, GS.lives - 1) * HGAP;
+  const MAX_HEARTS  = 5;
+  const dispHearts  = Math.min(GS.lives, MAX_HEARTS);
+  const extraLives  = GS.lives - MAX_HEARTS;
+  const extraLabel  = extraLives > 0 ? `+${extraLives}` : '';
+  const extraLabelW = extraLives > 0 ? ctx.measureText(extraLabel).width + HGAP : 0;
+  const totalHeartW = dispHearts * HEART + Math.max(0, dispHearts - 1) * HGAP + extraLabelW;
   let hx = BTN_X - PAD - totalHeartW;
   const hy = (BAR_H - HEART) / 2;
-  for (let i = 0; i < GS.lives; i++) {
+  for (let i = 0; i < dispHearts; i++) {
     if (uiHeartImg.complete && uiHeartImg.naturalWidth > 0) {
       ctx.globalAlpha = 1;
       ctx.drawImage(uiHeartImg, hx, hy, HEART, HEART);
@@ -101,6 +106,15 @@ function drawUI(ctx, canvas) {
       ctx.restore();
     }
     hx += HEART + HGAP;
+  }
+  if (extraLives > 0) {
+    ctx.save();
+    ctx.font        = `${FSZ}px 'Press Start 2P', monospace`;
+    ctx.fillStyle   = '#ff4466';
+    ctx.textAlign   = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(extraLabel, hx, BAR_H / 2);
+    ctx.restore();
   }
 
   // ── Score (center) ───────────────────────────────────────────────────────
