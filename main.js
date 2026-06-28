@@ -191,7 +191,10 @@ function applyItem(type, px, py) {
       GS.score += 1000;
       scorePopups.push({ x: px, y: py, timer: 55 });
       break;
-    case 'life':   GS.lives = Math.min(GS.lives + 1, 5); break;
+    case 'life':
+      if (GS.lives < 5) GS.lives++;
+      else GS.score += 500;
+      break;
   }
 }
 
