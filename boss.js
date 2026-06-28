@@ -533,6 +533,7 @@ class BossShark {
     // Phase 3 minions
     this.minionTimer   = 0;
     this.pendingSpawns = [];
+    this.activeMinions = [];
     // effect_angry
     this.angryTimer    = 0;
     this.angryFlip     = false;
@@ -650,14 +651,19 @@ class BossShark {
       this.minionTimer++;
       if (this.minionTimer >= 120) {
         this.minionTimer = 0;
-        const px  = player ? player.x : 0;
-        const py  = player ? player.y : this.canvas.height / 2;
-        const cx  = this.arrived ? this.x : this.canvas.width * 0.60;
-        const cy  = this.y;
-        const sx  = cx - this.w / 2 - 10;
-        const off = this.h * 0.5;
-        this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, cy - off, px, py));
-        this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, cy + off, px, py));
+        this.activeMinions = this.activeMinions.filter(m => !m.dead);
+        if (this.activeMinions.length < 2) {
+          const px  = player ? player.x : 0;
+          const py  = player ? player.y : this.canvas.height / 2;
+          const cx  = this.arrived ? this.x : this.canvas.width * 0.72;
+          const cy  = this.y;
+          const sx  = cx - this.w / 2 - 10;
+          const off = this.h * 0.5;
+          const m1  = new BossSharkMinion(this.canvas, sx, cy - off, px, py);
+          const m2  = new BossSharkMinion(this.canvas, sx, cy + off, px, py);
+          this.activeMinions.push(m1, m2);
+          this.pendingSpawns.push(m1, m2);
+        }
       }
       // angry anim toggle
       this.angryTimer++;
