@@ -1,5 +1,6 @@
-const canvas = document.getElementById('gameCanvas');
-const ctx    = canvas.getContext('2d');
+const safeArea = document.getElementById('safeArea');
+const canvas   = document.getElementById('gameCanvas');
+const ctx      = canvas.getContext('2d');
 
 // ─── Fixed internal resolution (letterbox scaling via CSS transform) ──────────
 const GAME_W = 960;
@@ -198,17 +199,29 @@ function applyItem(type, px, py) {
   }
 }
 
-// ─── Resize — letterbox scale canvas to fit viewport, maintain 16:9 ──────────
+// ─── Safe-area insets (resolved from CSS env() on the safeArea wrapper) ──────
+function getSafeInsets() {
+  const cs = getComputedStyle(safeArea);
+  return {
+    top:    parseFloat(cs.paddingTop)    || 0,
+    right:  parseFloat(cs.paddingRight)  || 0,
+    bottom: parseFloat(cs.paddingBottom) || 0,
+    left:   parseFloat(cs.paddingLeft)   || 0,
+  };
+}
+
+// ─── Resize — letterbox within safe area, maintain 16:9 ──────────────────────
 function resize() {
-  const scaleX = window.innerWidth  / GAME_W;
-  const scaleY = window.innerHeight / GAME_H;
-  const scale  = Math.min(scaleX, scaleY);
-  const ox = Math.round((window.innerWidth  - GAME_W * scale) / 2);
-  const oy = Math.round((window.innerHeight - GAME_H * scale) / 2);
+  const ins    = getSafeInsets();
+  const availW = window.innerWidth  - ins.left - ins.right;
+  const availH = window.innerHeight - ins.top  - ins.bottom;
+  const scale  = Math.min(availW / GAME_W, availH / GAME_H);
+  const ox     = Math.round((availW - GAME_W * scale) / 2);
+  const oy     = Math.round((availH - GAME_H * scale) / 2);
   canvas.style.width     = GAME_W + 'px';
   canvas.style.height    = GAME_H + 'px';
-  canvas.style.left      = ox + 'px';
-  canvas.style.top       = oy + 'px';
+  canvas.style.left      = (ins.left + ox) + 'px';
+  canvas.style.top       = (ins.top  + oy) + 'px';
   canvas.style.transform = `scale(${scale})`;
   if (player) player.clamp();
 }
@@ -225,14 +238,18 @@ function onResize() {
   }, 150);
 }
 
-// Convert viewport client coords → fixed 960×540 canvas coords (inverse letterbox scale)
+// Convert viewport client coords → fixed 960×540 canvas coords (inverse letterbox + safe area)
 function clientToCanvas(cx, cy) {
-  const scaleX = window.innerWidth  / GAME_W;
-  const scaleY = window.innerHeight / GAME_H;
-  const scale  = Math.min(scaleX, scaleY);
-  const ox = (window.innerWidth  - GAME_W * scale) / 2;
-  const oy = (window.innerHeight - GAME_H * scale) / 2;
-  return { x: (cx - ox) / scale, y: (cy - oy) / scale };
+  const ins    = getSafeInsets();
+  const availW = window.innerWidth  - ins.left - ins.right;
+  const availH = window.innerHeight - ins.top  - ins.bottom;
+  const scale  = Math.min(availW / GAME_W, availH / GAME_H);
+  const ox     = (availW - GAME_W * scale) / 2;
+  const oy     = (availH - GAME_H * scale) / 2;
+  return {
+    x: (cx - ins.left - ox) / scale,
+    y: (cy - ins.top  - oy) / scale,
+  };
 }
 
 // ─── Stage definitions (add entries here to extend to future stages) ──────────

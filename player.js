@@ -19,8 +19,8 @@ class Player {
   get _pad()  { return Math.round(this.canvas.height * 0.035); }
   get _minX() { return this.w / 2 + this._pad; }
   get _maxX() { return this.canvas.width  - this.w / 2 - this._pad; }
-  get _minY() { return Math.max(this.h + this._pad, Math.round(this.canvas.height * 0.10)); }
-  get _maxY() { return Math.min(this.canvas.height - this.h - this._pad, Math.round(this.canvas.height * 0.90)); }
+  get _minY() { return this.h + this._pad; }
+  get _maxY() { return this.canvas.height - this.h - this._pad; }
 
   setTarget(x, y) { this.targetX = x; this.targetY = y; }
 
