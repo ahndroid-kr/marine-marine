@@ -383,7 +383,7 @@ class MidbossTurtle {
       const uiH = Math.round(this.canvas.height * 0.085);
       const reMargin = this.h / 2 + 10;
       this.x           = this.canvas.width + this.w / 2;
-      this.y           = uiH + reMargin + Math.random() * (this.canvas.height - uiH - reMargin * 2);
+      this.y           = this.canvas.height * 0.25 + Math.random() * this.canvas.height * 0.5;
       this.burstActive     = false;
       this.burstTimer      = 0;
       this.burstShotsFired = 0;
@@ -618,7 +618,7 @@ class BossShark {
       this.x -= 14 * s;
       if (this.x < -(this.w / 2)) {
         // Re-enter from right at new y
-        this.y = uiH + margin + Math.random() * (this.canvas.height - uiH - margin * 2);
+        this.y = this.canvas.height * 0.25 + Math.random() * this.canvas.height * 0.5;
         this.x       = this.canvas.width + this.w / 2;
         this.dashing = false;
         this.arrived = false; // re-advance to rest
