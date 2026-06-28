@@ -1,6 +1,12 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx    = canvas.getContext('2d');
 
+// ─── Fixed internal resolution (letterbox scaling via CSS transform) ──────────
+const GAME_W = 960;
+const GAME_H = 540;
+canvas.width  = GAME_W;
+canvas.height = GAME_H;
+
 let player, bullets, enemies, items, pets, frame, scorePopups, currentStage;
 const keys = {};
 
@@ -87,11 +93,11 @@ function updatePlants() {
 // ─── Draw background ──────────────────────────────────────────────────────────
 function drawBg() {
   if (bgImg.complete && bgImg.naturalWidth > 0) {
-    const scale  = canvas.height / bgImg.naturalHeight;
-    const iw     = bgImg.naturalWidth * scale;
+    // Tile horizontally: scale image to canvas height, scroll
+    const iw     = Math.round(bgImg.naturalWidth * (GAME_H / bgImg.naturalHeight));
     const offset = -(GS.scrollX * 0.3) % iw;
-    for (let x = offset; x < canvas.width + iw; x += iw) {
-      ctx.drawImage(bgImg, x, 0, iw, canvas.height);
+    for (let x = offset; x < GAME_W + iw; x += iw) {
+      ctx.drawImage(bgImg, x, 0, iw, GAME_H);
     }
   } else {
     const g = ctx.createLinearGradient(0, 0, 0, canvas.height);
@@ -189,12 +195,18 @@ function applyItem(type, px, py) {
   }
 }
 
-// ─── Resize ───────────────────────────────────────────────────────────────────
+// ─── Resize — letterbox scale canvas to fit viewport, maintain 16:9 ──────────
 function resize() {
-  canvas.width        = window.innerWidth;
-  canvas.height       = window.innerHeight;
-  canvas.style.width  = canvas.width  + 'px';
-  canvas.style.height = canvas.height + 'px';
+  const scaleX = window.innerWidth  / GAME_W;
+  const scaleY = window.innerHeight / GAME_H;
+  const scale  = Math.min(scaleX, scaleY);
+  const ox = Math.round((window.innerWidth  - GAME_W * scale) / 2);
+  const oy = Math.round((window.innerHeight - GAME_H * scale) / 2);
+  canvas.style.width     = GAME_W + 'px';
+  canvas.style.height    = GAME_H + 'px';
+  canvas.style.left      = ox + 'px';
+  canvas.style.top       = oy + 'px';
+  canvas.style.transform = `scale(${scale})`;
   if (player) player.clamp();
 }
 
@@ -210,16 +222,14 @@ function onResize() {
   }, 150);
 }
 
-// canvas is position:fixed top:0 left:0 at exact viewport size — client coords = canvas coords
+// Convert viewport client coords → fixed 960×540 canvas coords (inverse letterbox scale)
 function clientToCanvas(cx, cy) {
-  // Ensure canvas resolution matches viewport (guards against stale resize)
-  if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
-    canvas.width        = window.innerWidth;
-    canvas.height       = window.innerHeight;
-    canvas.style.width  = canvas.width  + 'px';
-    canvas.style.height = canvas.height + 'px';
-  }
-  return { x: cx, y: cy };
+  const scaleX = window.innerWidth  / GAME_W;
+  const scaleY = window.innerHeight / GAME_H;
+  const scale  = Math.min(scaleX, scaleY);
+  const ox = (window.innerWidth  - GAME_W * scale) / 2;
+  const oy = (window.innerHeight - GAME_H * scale) / 2;
+  return { x: (cx - ox) / scale, y: (cy - oy) / scale };
 }
 
 // ─── Stage definitions (add entries here to extend to future stages) ──────────
