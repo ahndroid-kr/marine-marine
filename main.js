@@ -497,6 +497,7 @@ function update() {
     if (!b.fromPlayer) continue;
     for (const e of enemies) {
       if (b.dead || e.dead || e.dying) continue;
+      if (e.x >= canvas.width) continue; // not yet on-screen — no hitbox
       if (overlap(b, e)) {
         b.dead = true;
         if (e.invincibleTimer > 0) continue;
