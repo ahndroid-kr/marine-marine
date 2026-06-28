@@ -323,11 +323,12 @@ function update() {
 
   // Enemy update — boss returns shots when firing
   for (const e of enemies) {
-    const shots = e.update();
+    const shots = e.update(player);
     if (shots) {
       const isBoss = e instanceof BossPuffer || e instanceof BossShark;
       for (const s of shots) {
-        bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false, isBoss));
+        const opts = s.img ? { img: s.img, w: s.bw, h: s.bh } : {};
+        bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false, isBoss, false, opts));
       }
     }
   }

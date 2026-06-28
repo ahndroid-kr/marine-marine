@@ -12,6 +12,9 @@ effectBossHitImg.src = 'assets/images/effect_boss_hit.png';
 const midbossTurtleImg = new Image();
 midbossTurtleImg.src = 'assets/images/midboss_turtle.png';
 
+const bulletTurtleShellImg = new Image();
+bulletTurtleShellImg.src = 'assets/images/bullet_turtle_shell.png';
+
 const bossSharkImgs = { 1: new Image(), 2: new Image(), dead: new Image() };
 bossSharkImgs[1].src   = 'assets/images/boss_shark_1.png';
 bossSharkImgs[2].src   = 'assets/images/boss_shark_2.png';
@@ -343,90 +346,95 @@ class MidbossTurtle {
     this.t               = 0;
     this.hitFlash        = 0;
     this.hitEffects      = [];
+    // Pattern 1 state
     this.fireTimer       = 0;
-    this.behaviorPhase   = 'advance';
-    this.lastDashY       = canvas.height / 2;
-    this.invincibleTimer = 0;
-    this.reentryGrace    = 0;
+    this.burstActive     = false;
+    this.burstTimer      = 0;
+    this.burstShotsFired = 0;
+    // Pattern 2 state (HP ≤ 50%)
+    this.shellTimer      = 0;
   }
 
   get w() { return Math.round(this.canvas.height * 0.184); }
   get h() { return Math.round(this.canvas.height * 0.095); }
 
   onHit() {
-    if (this.invincibleTimer > 0) return;
     this.hitFlash = 6;
     const angle = Math.random() * Math.PI * 2;
     const dist  = (this.w / 2) * (0.5 + Math.random() * 0.4);
     this.hitEffects.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, timer: 12 });
   }
 
-  _fire3Way() {
-    const spd = 5 * this.canvas.height / 600;
-    return [
-      { x: this.x, y: this.y, vx: -spd, vy: -spd * 0.35 },
-      { x: this.x, y: this.y, vx: -spd, vy: 0            },
-      { x: this.x, y: this.y, vx: -spd, vy:  spd * 0.35  },
-    ];
-  }
-
-  update() {
+  update(player) {
     const s = this.canvas.height / 600;
     this.t += 0.02;
-    if (this.hitFlash        > 0) this.hitFlash--;
-    if (this.invincibleTimer > 0) this.invincibleTimer--;
+    if (this.hitFlash > 0) this.hitFlash--;
     this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
 
-    if (this.behaviorPhase === 'advance') {
-      this.x -= 0.7 * s;
-      this.y += Math.sin(this.t) * 1.0 * s;
-      const margin = this.h / 2 + 10;
-      this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
+    // Movement: slow advance with sine oscillation
+    this.x -= 0.7 * s;
+    this.y += Math.sin(this.t) * 1.0 * s;
+    const margin = this.h / 2 + 10;
+    this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
 
-      if (this.reentryGrace > 0) {
-        this.reentryGrace--;
-      } else if (this.hp <= this.maxHp * 0.5) {
-        this.behaviorPhase = 'dash';
-        this.lastDashY     = this.y;
-        return null;
+    if (this.x < -(this.w + 40)) { this.dead = true; return null; }
+
+    const shots = [];
+    const px = player ? player.x : 0;
+    const py = player ? player.y : this.canvas.height / 2;
+
+    // --- Pattern 1: 3 homing shots sequentially (0.3s / 18f apart), cooldown 2.5s ---
+    if (this.burstActive) {
+      this.burstTimer++;
+      // Fire at frames 1, 19, 37 (≈0, 0.3s, 0.6s into burst)
+      const thresholds = [1, 19, 37];
+      if (this.burstShotsFired < 3 && this.burstTimer >= thresholds[this.burstShotsFired]) {
+        const dx = px - this.x, dy = py - this.y;
+        const len = Math.hypot(dx, dy) || 1;
+        const spd = 3.5 * s;
+        shots.push({ x: this.x, y: this.y, vx: dx / len * spd, vy: dy / len * spd });
+        this.burstShotsFired++;
       }
-
-      if (this.x < -(this.w + 40)) { this.dead = true; return null; }
-
-      this.fireTimer++;
-      if (this.fireTimer >= 150) {
-        this.fireTimer = 0;
-        return this._fire3Way();
+      if (this.burstShotsFired >= 3) {
+        this.burstActive     = false;
+        this.burstTimer      = 0;
+        this.burstShotsFired = 0;
       }
     } else {
-      const dashSpd = 12 * s;
-      this.x -= dashSpd;
-
-      if (this.x > 0 && this.x < this.canvas.width) this.lastDashY = this.y;
-
-      if (this.x < -(this.w / 2)) {
-        const uiH    = Math.round(this.canvas.height * 0.085);
-        const spread = Math.round(this.canvas.height * 0.15);
-        const minY   = uiH + this.h / 2 + 20;
-        const maxY   = this.canvas.height - this.h / 2 - 20;
-        this.y = Math.max(minY, Math.min(maxY,
-          this.lastDashY + (Math.random() - 0.5) * 2 * spread));
-        this.x             = this.canvas.width + this.w / 2;
-        this.behaviorPhase = 'advance';
-        this.fireTimer     = 0;
-        this.reentryGrace  = 180;
-        this.invincibleTimer = 30;
+      this.fireTimer++;
+      if (this.fireTimer >= 150) { // 2.5s at 60fps
+        this.fireTimer   = 0;
+        this.burstActive = true;
       }
     }
-    return null;
+
+    // --- Pattern 2: 8-directional shell spread, HP ≤ 50%, cooldown 4s ---
+    if (this.hp <= this.maxHp * 0.5) {
+      this.shellTimer++;
+      if (this.shellTimer >= 240) { // 4s at 60fps
+        this.shellTimer = 0;
+        const spd  = 3 * s;
+        const size = Math.round(this.canvas.height * (48 / 600));
+        for (let i = 0; i < 8; i++) {
+          const angle = (Math.PI / 4) * i;
+          shots.push({
+            x: this.x, y: this.y,
+            vx: Math.cos(angle) * spd,
+            vy: Math.sin(angle) * spd,
+            img: bulletTurtleShellImg, bw: size, bh: size,
+          });
+        }
+      }
+    }
+
+    return shots.length ? shots : null;
   }
 
   draw(ctx) {
     const hw = this.w / 2, hh = this.h / 2;
     ctx.save();
     ctx.translate(this.x, this.y);
-    if (this.invincibleTimer > 0) ctx.globalAlpha = Math.floor(this.invincibleTimer / 4) % 2 === 0 ? 1.0 : 0.35;
-    else if (this.hitFlash  > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
     ctx.drawImage(midbossTurtleImg, -hw, -hh, this.w, this.h);
     ctx.globalAlpha = 1;
 

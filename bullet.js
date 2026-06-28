@@ -6,7 +6,7 @@ bulletBubbleLargeImg.src = 'assets/images/bullet_bubble_large.png';
 
 // canvas is the global from main.js — available at call-time
 class Bullet {
-  constructor(x, y, vx, vy, fromPlayer, fromBoss = false, large = false) {
+  constructor(x, y, vx, vy, fromPlayer, fromBoss = false, large = false, opts = {}) {
     this.x = x;
     this.y = y;
     this.vx = vx;
@@ -15,15 +15,20 @@ class Bullet {
     this.fromBoss = fromBoss;
     this.large = large;
     this.dead = false;
+    this.customImg = opts.img || null;
+    this.fixedW    = opts.w  || null;
+    this.fixedH    = opts.h  || null;
   }
 
   // Dynamic sizing relative to canvas height
   get w() {
+    if (this.fixedW)     return this.fixedW;
     if (this.fromPlayer) return Math.round(canvas.height * (this.large ? 0.052 : 0.036));
     if (this.fromBoss)   return Math.round(canvas.height * 0.016);
     return Math.round(canvas.height * 0.016);
   }
   get h() {
+    if (this.fixedH)     return this.fixedH;
     if (this.fromPlayer) return Math.round(canvas.height * (this.large ? 0.052 : 0.036));
     if (this.fromBoss)   return Math.round(canvas.height * 0.016);
     return Math.round(canvas.height * 0.016);
@@ -41,7 +46,9 @@ class Bullet {
     ctx.save();
     ctx.translate(this.x, this.y);
 
-    if (this.fromPlayer) {
+    if (this.customImg) {
+      ctx.drawImage(this.customImg, -this.w / 2, -this.h / 2, this.w, this.h);
+    } else if (this.fromPlayer) {
       const img = this.large ? bulletBubbleLargeImg : bulletBubbleImg;
       ctx.drawImage(img, -this.w / 2, -this.h / 2, this.w, this.h);
     } else if (this.fromBoss) {
