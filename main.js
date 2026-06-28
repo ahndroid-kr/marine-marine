@@ -332,6 +332,17 @@ function update() {
       }
     }
   }
+
+  // Drain pending spawns from bosses (e.g. BossShark phase 3 minions)
+  const newSpawns = [];
+  for (const e of enemies) {
+    if (e.pendingSpawns && e.pendingSpawns.length) {
+      newSpawns.push(...e.pendingSpawns);
+      e.pendingSpawns = [];
+    }
+  }
+  enemies.push(...newSpawns);
+
   enemies = enemies.filter(e => !e.dead);
 
   for (const item of items) item.update();

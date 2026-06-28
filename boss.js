@@ -463,50 +463,38 @@ class MidbossTurtle {
 }
 
 // ─── Stage 2 Boss Minion ──────────────────────────────────────────────────────
+// Spawned by BossShark phase 3. Dashes straight toward the player's position
+// at spawn time (direction is fixed — not tracking).
 class BossSharkMinion {
-  constructor(canvas, side) {
+  constructor(canvas, spawnX, spawnY, targetX, targetY) {
     this.canvas     = canvas;
-    this.hp         = 3;
-    this.scoreValue = 200;
+    this.hp         = 2;
+    this.scoreValue = 100;
     this.dead       = false;
     this.dying      = false;
-    const s   = canvas.height / 600;
-    const uiH = Math.round(canvas.height * 0.085);
-    const sbH = Math.round(canvas.height * 0.035);
-    const mid = (canvas.height - uiH - sbH) / 2 + uiH;
-    this.x = canvas.width + this.w;
-    this.y = side === 'above'
-      ? mid - canvas.height * 0.15
-      : mid + canvas.height * 0.15;
-    this.vx       = -(2.0 + Math.random() * 1.0) * s;
-    this.t        = Math.random() * Math.PI * 2;
-    this.hitFlash = 0;
-    this.fireTimer = Math.floor(Math.random() * 180);
+    this.x          = spawnX;
+    this.y          = spawnY;
+    this.hitFlash   = 0;
+    const s  = canvas.height / 600;
+    const dx = targetX - spawnX, dy = targetY - spawnY;
+    const len = Math.hypot(dx, dy) || 1;
+    this.vx  = (dx / len) * 5 * s;
+    this.vy  = (dy / len) * 5 * s;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.140); }
-  get h() { return Math.round(this.canvas.height * 0.070); }
+  get w() { return Math.round(this.canvas.height * 0.16); }  // 96px at 600h
+  get h() { return Math.round(this.canvas.height * 0.08); }  // 48px at 600h
 
   onHit() { this.hitFlash = 4; }
 
   update() {
-    const s   = this.canvas.height / 600;
-    const sbH = Math.round(this.canvas.height * 0.035);
-    const uiH = Math.round(this.canvas.height * 0.085);
-
     this.x += this.vx;
-    this.t += 0.06;
-    this.y += Math.sin(this.t) * 1.5 * s;
-    this.y = Math.max(uiH + this.h / 2, Math.min(this.canvas.height - sbH - this.h / 2, this.y));
-
-    if (this.x < -(this.w + 20)) this.dead = true;
+    this.y += this.vy;
     if (this.hitFlash > 0) this.hitFlash--;
-
-    this.fireTimer++;
-    if (this.fireTimer >= 180 && !this.dead) {
-      this.fireTimer = 0;
-      const spd = 5 * s;
-      return [{ x: this.x - this.w / 2, y: this.y, vx: -spd, vy: 0 }];
+    const pad = this.w + 20;
+    if (this.x < -pad || this.x > this.canvas.width + pad ||
+        this.y < -pad || this.y > this.canvas.height + pad) {
+      this.dead = true;
     }
     return null;
   }
@@ -600,7 +588,7 @@ class BossShark {
     ];
   }
 
-  update() {
+  update(player) {
     if (this.dying) {
       this.deadTimer++;
       if (this.deadTimer > 150) this.dead = true;
@@ -648,13 +636,17 @@ class BossShark {
         if (this.dashCooldown <= 0) this.dashing = true;
       }
 
-      // Phase 3: minion spawn every 9s
+      // Phase 3: minion spawn every 8s
       if (ap === 3) {
         this.minionTimer++;
-        if (this.minionTimer >= 540) {
+        if (this.minionTimer >= 480) {
           this.minionTimer = 0;
-          this.pendingSpawns.push(new BossSharkMinion(this.canvas, 'above'));
-          this.pendingSpawns.push(new BossSharkMinion(this.canvas, 'below'));
+          const px  = player ? player.x : 0;
+          const py  = player ? player.y : this.canvas.height / 2;
+          const sx  = this.x - this.w / 2 - 10;
+          const off = this.h * 0.5;
+          this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, this.y - off, px, py));
+          this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, this.y + off, px, py));
         }
         // angry anim toggle
         this.angryTimer++;
