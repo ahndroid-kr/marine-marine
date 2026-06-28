@@ -515,8 +515,8 @@ class BossShark {
     this.canvas        = canvas;
     this.x             = canvas.width + 200;
     this.y             = canvas.height / 2;
-    this.maxHp         = 100;
-    this.hp            = 100;
+    this.maxHp         = 400;
+    this.hp            = 400;
     this.dead          = false;
     this.dying         = false;
     this.scoreValue    = 15000;
@@ -639,7 +639,7 @@ class BossShark {
       // Phase 3: minion spawn every 8s
       if (ap === 3) {
         this.minionTimer++;
-        if (this.minionTimer >= 480) {
+        if (this.minionTimer >= 120) {
           this.minionTimer = 0;
           const px  = player ? player.x : 0;
           const py  = player ? player.y : this.canvas.height / 2;
