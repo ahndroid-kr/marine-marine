@@ -515,8 +515,8 @@ class BossShark {
     this.canvas        = canvas;
     this.x             = canvas.width + 200;
     this.y             = canvas.height / 2;
-    this.maxHp         = 400;
-    this.hp            = 400;
+    this.maxHp         = 300;
+    this.hp            = 300;
     this.dead          = false;
     this.dying         = false;
     this.scoreValue    = 15000;
