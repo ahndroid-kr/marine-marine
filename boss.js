@@ -1,7 +1,12 @@
 function _loadImg(src) {
   const img = new Image();
   img.src = src;
-  img.decode().catch(() => {});
+  img.decode().then(() => {
+    const tmp = document.createElement('canvas');
+    tmp.width  = img.naturalWidth  || 2;
+    tmp.height = img.naturalHeight || 2;
+    tmp.getContext('2d').drawImage(img, 0, 0);
+  }).catch(() => {});
   return img;
 }
 

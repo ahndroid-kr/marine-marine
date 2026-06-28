@@ -1,17 +1,23 @@
+function _loadEnemyImg(src) {
+  const img = new Image();
+  img.src = src;
+  img.decode().then(() => {
+    const tmp = document.createElement('canvas');
+    tmp.width  = img.naturalWidth  || 2;
+    tmp.height = img.naturalHeight || 2;
+    tmp.getContext('2d').drawImage(img, 0, 0);
+  }).catch(() => {});
+  return img;
+}
+
 const enemyImgs = {};
 ['squid', 'shrimp', 'hairtail'].forEach(t => {
-  const img = new Image();
-  img.src = `assets/images/enemy_${t}.png`;
-  img.decode().catch(() => {});
-  enemyImgs[t] = img;
+  enemyImgs[t] = _loadEnemyImg(`assets/images/enemy_${t}.png`);
 });
 
 const enemyStage2Imgs = {};
 ['porgy', 'filefish', 'flounder'].forEach(t => {
-  const img = new Image();
-  img.src = `assets/images/enemy_${t}.png`;
-  img.decode().catch(() => {});
-  enemyStage2Imgs[t] = img;
+  enemyStage2Imgs[t] = _loadEnemyImg(`assets/images/enemy_${t}.png`);
 });
 
 // Size ratios relative to canvas.height
