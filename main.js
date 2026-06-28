@@ -114,6 +114,9 @@ function drawBg() {
     ctx.restore();
   }
 
+  // Deco objects (jellyfish, bubbles, fish schools — behind plants and seabed)
+  drawDecos(ctx);
+
   // Seabed
   const SB_H = Math.round(canvas.height * 0.035);
   const sbY  = canvas.height - SB_H;
@@ -207,6 +210,7 @@ function onResize() {
   resizeTimer = setTimeout(() => {
     initBg();
     initPlants();
+    initDecos(canvas);
     if (player) player.clamp();
   }, 150);
 }
@@ -227,6 +231,7 @@ function init() {
   resize();
   initBg();
   initPlants();
+  initDecos(canvas);
 }
 
 // ─── Start a specific stage (called from title screen) ────────────────────────
@@ -255,6 +260,7 @@ function startStage(num) {
   bgImg.src     = def.bg;
   initBg();
   initPlants();
+  initDecos(canvas);
 }
 
 // ─── Update ───────────────────────────────────────────────────────────────────
@@ -267,6 +273,7 @@ function update() {
     GS.scrollX += GS.scrollSpeed;
     updateBg();
     updatePlants();
+    updateDecos(canvas);
     return;
   }
   if (GS.phase === 'stageclear') {
@@ -283,6 +290,7 @@ function update() {
   GS.scrollX += GS.scrollSpeed;
   updateBg();
   updatePlants();
+  updateDecos(canvas);
 
   if (GS.invincible > 0) {
     GS.invincible--;
