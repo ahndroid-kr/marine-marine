@@ -478,8 +478,8 @@ class BossSharkMinion {
     const s  = canvas.height / 600;
     const dx = targetX - spawnX, dy = targetY - spawnY;
     const len = Math.hypot(dx, dy) || 1;
-    this.vx  = (dx / len) * 5 * s;
-    this.vy  = (dy / len) * 5 * s;
+    this.vx  = (dx / len) * 2.5 * s;
+    this.vy  = (dy / len) * 2.5 * s;
   }
 
   get w() { return Math.round(this.canvas.height * 0.16); }  // 96px at 600h
@@ -601,7 +601,7 @@ class BossShark {
     if (this.hitFlash > 0) this.hitFlash--;
     this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
 
-    const restX  = this.canvas.width * 0.60;
+    const restX  = this.canvas.width * 0.72;
     const minX   = this.w / 2 + 20;
     const margin = this.h / 2 + 10;
     const uiH    = Math.round(this.canvas.height * 0.085);
