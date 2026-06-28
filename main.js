@@ -6,6 +6,7 @@ const keys = {};
 
 let paused           = false;
 let pauseBtnBounds   = { x: 0, y: 0, w: 0, h: 0 };
+let resumeBtnBounds  = { x: 0, y: 0, w: 0, h: 0 };
 let restartBtnBounds = { x: 0, y: 0, w: 0, h: 0 };
 let titleBtnBounds   = [];
 
@@ -506,7 +507,8 @@ function handlePauseOrRestart(px, py) {
   if (GS.phase === 'playing' || paused) {
     if (inRect(px, py, pauseBtnBounds)) { paused = !paused; return true; }
   }
-  // Restart button (pause overlay only)
+  // Resume / Restart buttons (pause overlay only)
+  if (paused && inRect(px, py, resumeBtnBounds))  { paused = false; return true; }
   if (paused && inRect(px, py, restartBtnBounds)) { paused = false; init(); return true; }
   return false;
 }

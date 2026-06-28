@@ -186,37 +186,56 @@ function drawPaused(ctx, canvas) {
   ctx.fillText('PAUSED', cx, cy - titleSz * 0.95);
   ctx.shadowBlur  = 0;
 
-  // Resume hint (pulsing)
+  // ESC hint (pulsing)
   ctx.font        = `${hintSz}px 'Press Start 2P', monospace`;
   ctx.fillStyle   = 'rgba(200, 230, 255, 0.80)';
   ctx.globalAlpha = 0.55 + 0.45 * Math.sin(Date.now() / 560);
   ctx.fillText('PRESS ESC TO RESUME', cx, cy + hintSz * 0.5);
   ctx.globalAlpha = 1;
 
-  // RESTART button
-  const btnW = Math.round(canvas.width  * 0.28);
+  // Two buttons: RESUME (left/green) | RESTART (right/red)
+  const btnW = Math.round(canvas.width  * 0.22);
   const btnH = Math.round(canvas.height * 0.070);
-  const btnX = cx - btnW / 2;
-  const btnY = cy + titleSz * 1.15;
+  const btnGap = Math.round(canvas.width * 0.04);
+  const btnY = cy + titleSz * 1.20;
+  const resumeX  = cx - btnGap / 2 - btnW;
+  const restartX = cx + btnGap / 2;
 
-  if (typeof restartBtnBounds !== 'undefined') {
-    restartBtnBounds.x = btnX; restartBtnBounds.y = btnY;
-    restartBtnBounds.w = btnW; restartBtnBounds.h = btnH;
+  // RESUME button
+  if (typeof resumeBtnBounds !== 'undefined') {
+    resumeBtnBounds.x = resumeX; resumeBtnBounds.y = btnY;
+    resumeBtnBounds.w = btnW;    resumeBtnBounds.h = btnH;
   }
+  ctx.fillStyle   = 'rgba(50, 255, 120, 0.15)';
+  ctx.strokeStyle = '#44ff88';
+  ctx.lineWidth   = 2;
+  ctx.shadowColor = '#44ff88';
+  ctx.shadowBlur  = 14;
+  roundRect(ctx, resumeX, btnY, btnW, btnH, 6);
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowBlur  = 0;
+  ctx.font      = `${btnSz}px 'Press Start 2P', monospace`;
+  ctx.fillStyle = '#88ffaa';
+  ctx.fillText('RESUME', resumeX + btnW / 2, btnY + btnH / 2);
 
+  // RESTART button
+  if (typeof restartBtnBounds !== 'undefined') {
+    restartBtnBounds.x = restartX; restartBtnBounds.y = btnY;
+    restartBtnBounds.w = btnW;     restartBtnBounds.h = btnH;
+  }
   ctx.fillStyle   = 'rgba(255, 50, 50, 0.15)';
   ctx.strokeStyle = '#ff4444';
   ctx.lineWidth   = 2;
   ctx.shadowColor = '#ff4444';
   ctx.shadowBlur  = 14;
-  roundRect(ctx, btnX, btnY, btnW, btnH, 6);
+  roundRect(ctx, restartX, btnY, btnW, btnH, 6);
   ctx.fill();
   ctx.stroke();
   ctx.shadowBlur  = 0;
-
   ctx.font      = `${btnSz}px 'Press Start 2P', monospace`;
   ctx.fillStyle = '#ff7777';
-  ctx.fillText('RESTART', cx, btnY + btnH / 2);
+  ctx.fillText('RESTART', restartX + btnW / 2, btnY + btnH / 2);
 
   ctx.restore();
 }
