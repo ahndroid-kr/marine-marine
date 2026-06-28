@@ -6,6 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-fullscreen" />
   <meta name="apple-mobile-web-app-title" content="Marine" />
+  <meta name="screen-orientation" content="landscape" />
   <meta name="theme-color" content="#0a1628" />
   <link rel="manifest" href="manifest.json" />
   <title>Marine Marine</title>
@@ -43,6 +44,9 @@
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW:', err));
     }
+    try {
+      screen.orientation.lock('landscape').catch(() => {});
+    } catch (_) {}
   </script>
 </body>
 </html>
