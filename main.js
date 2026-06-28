@@ -191,22 +191,16 @@ function applyItem(type, px, py) {
 
 // ─── Resize ───────────────────────────────────────────────────────────────────
 function resize() {
-  canvas.width        = window.innerWidth;
-  canvas.height       = window.innerHeight;
-  canvas.style.width  = '';
-  canvas.style.height = '';
+  // Match canvas resolution to its CSS-rendered size so coordinates always align
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = Math.round(rect.width)  || window.innerWidth;
+  canvas.height = Math.round(rect.height) || window.innerHeight;
   if (player) player.clamp();
 }
 
 let resizeTimer = null;
 function onResize() {
-  const W = window.innerWidth;
-  const H = window.innerHeight;
-  console.log('[resize]', W, H);
-  canvas.width        = W;
-  canvas.height       = H;
-  canvas.style.width  = W + 'px';
-  canvas.style.height = H + 'px';
+  resize();
   clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
     initBg();
@@ -214,6 +208,14 @@ function onResize() {
     initDecos(canvas);
     if (player) player.clamp();
   }, 150);
+}
+
+// Convert CSS-pixel client coordinates → canvas pixel coordinates
+function clientToCanvas(cx, cy) {
+  const rect = canvas.getBoundingClientRect();
+  const sx = canvas.width  / (rect.width  || canvas.width);
+  const sy = canvas.height / (rect.height || canvas.height);
+  return { x: (cx - rect.left) * sx, y: (cy - rect.top) * sy };
 }
 
 // ─── Stage definitions (add entries here to extend to future stages) ──────────
@@ -576,10 +578,10 @@ function handleClearOrGameover() {
 
 canvas.addEventListener('touchstart', e => {
   e.preventDefault();
-  const t  = e.touches[0];
-  const px = t.clientX, py = t.clientY;
-  // UI hit-tests use raw coordinates; player movement uses offset so finger doesn't cover sprite
-  const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13); // ~80px at 600h
+  const t   = e.touches[0];
+  const pos = clientToCanvas(t.clientX, t.clientY);
+  const px  = pos.x, py = pos.y;
+  const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13);
   if (GS.phase === 'title') {
     for (let i = 0; i < titleBtnBounds.length; i++) {
       if (inRect(px, py, titleBtnBounds[i])) { startStage(i + 1); return; }
@@ -595,9 +597,10 @@ canvas.addEventListener('touchstart', e => {
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
   if (paused) return;
-  const t = e.touches[0];
+  const t   = e.touches[0];
+  const pos = clientToCanvas(t.clientX, t.clientY);
   const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13);
-  player.setTarget(t.clientX, t.clientY - TOUCH_Y_OFFSET);
+  player.setTarget(pos.x, pos.y - TOUCH_Y_OFFSET);
 }, { passive: false });
 
 canvas.addEventListener('touchend', e => { e.preventDefault(); }, { passive: false });
@@ -605,7 +608,8 @@ canvas.addEventListener('touchend', e => { e.preventDefault(); }, { passive: fal
 let mouseDown = false;
 canvas.addEventListener('mousedown', e => {
   mouseDown = true;
-  const px = e.clientX, py = e.clientY;
+  const pos = clientToCanvas(e.clientX, e.clientY);
+  const px  = pos.x, py = pos.y;
   if (GS.phase === 'title') {
     for (let i = 0; i < titleBtnBounds.length; i++) {
       if (inRect(px, py, titleBtnBounds[i])) { startStage(i + 1); return; }
@@ -618,7 +622,10 @@ canvas.addEventListener('mousedown', e => {
   player.setTarget(px, py);
 });
 canvas.addEventListener('mousemove', e => {
-  if (mouseDown && GS.phase === 'playing' && !paused && player) player.setTarget(e.clientX, e.clientY);
+  if (mouseDown && GS.phase === 'playing' && !paused && player) {
+    const pos = clientToCanvas(e.clientX, e.clientY);
+    player.setTarget(pos.x, pos.y);
+  }
 });
 canvas.addEventListener('mouseup', () => { mouseDown = false; });
 
