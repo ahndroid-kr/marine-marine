@@ -13,8 +13,8 @@ class Player {
     this.hitTimer  = 0;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.10); }
-  get h() { return Math.round(this.canvas.height * 0.10); }
+  get w() { return Math.round(this.canvas.height * 0.13); }
+  get h() { return Math.round(this.canvas.height * 0.13); }
 
   get _pad()  { return Math.round(this.canvas.height * 0.035); }
   get _minX() { return this.w / 2 + this._pad; }

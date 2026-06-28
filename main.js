@@ -715,7 +715,8 @@ canvas.addEventListener('touchstart', e => {
   const t   = e.touches[0];
   const pos = clientToCanvas(t.clientX, t.clientY);
   const px  = pos.x, py = pos.y;
-  const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13);
+  const TOUCH_X_OFFSET = 80;
+  const TOUCH_Y_OFFSET = 40;
   console.log('[touch] phase=' + GS.phase + ' px=' + Math.round(px) + ' py=' + Math.round(py) + ' canvas=' + canvas.width + 'x' + canvas.height + ' bounds=' + titleBtnBounds.length);
   if (GS.phase === 'title') {
     for (let i = 0; i < titleBtnBounds.length; i++) {
@@ -734,7 +735,7 @@ canvas.addEventListener('touchstart', e => {
   if (GS.phase === 'gameover') { handleClearOrGameover(); return; }
   if (GS.phase === 'stageclear' && currentStage === LAST_STAGE) { handleClearOrGameover(); return; }
   if (GS.phase === 'stageclear') return; // mid-transition, ignore taps
-  player.setTarget(px, py - TOUCH_Y_OFFSET);
+  player.setTarget(px - TOUCH_X_OFFSET, py - TOUCH_Y_OFFSET);
 }, { passive: false });
 
 canvas.addEventListener('touchmove', e => {
@@ -742,8 +743,7 @@ canvas.addEventListener('touchmove', e => {
   if (paused) return;
   const t   = e.touches[0];
   const pos = clientToCanvas(t.clientX, t.clientY);
-  const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13);
-  player.setTarget(pos.x, pos.y - TOUCH_Y_OFFSET);
+  player.setTarget(pos.x - 80, pos.y - 40);
 }, { passive: false });
 
 canvas.addEventListener('touchend', e => { e.preventDefault(); }, { passive: false });
