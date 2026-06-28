@@ -296,27 +296,29 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
   ctx.textAlign    = 'center';
   ctx.textBaseline = 'middle';
   ctx.font         = `${titleSz}px 'Press Start 2P', monospace`;
-  ctx.fillStyle    = '#00e5ff';
-  ctx.shadowColor  = '#00e5ff';
-  ctx.shadowBlur   = 28;
-  ctx.fillText('MARINE', cx, cy - titleSz * 1.15);
-  ctx.fillText('MARINE', cx, cy - titleSz * 0.05);
+  ctx.fillStyle    = '#f5f0e0';
+  ctx.shadowColor  = 'rgba(245, 240, 224, 0.30)';
+  ctx.shadowBlur   = 12;
+  ctx.fillText('MARINE', cx, cy - titleSz * 1.35);
+  ctx.fillText('MARINE', cx, cy - titleSz * 0.25);
   ctx.shadowBlur   = 0;
 
-  // ── "SELECT STAGE" label ─────────────────────────────────────────────────
-  const subSz = Math.round(canvas.height * 0.014);
-  ctx.font      = `${subSz}px 'Press Start 2P', monospace`;
-  ctx.fillStyle = 'rgba(150, 220, 255, 0.70)';
-  ctx.fillText('SELECT STAGE', cx, cy + titleSz * 0.85);
+  // ── Buttons ──────────────────────────────────────────────────────────────
+  const isQA    = typeof QA_MODE !== 'undefined' && QA_MODE;
+  const subSz   = Math.round(canvas.height * 0.014);
+  const btnW    = Math.round(Math.min(canvas.width * 0.24, canvas.height * 0.22));
+  const btnH    = Math.round(canvas.height * 0.072);
+  const btnSz   = Math.round(canvas.height * 0.018);
+  const gap     = Math.round(canvas.width  * 0.04);
+  const totalW  = stageLabels.length * btnW + (stageLabels.length - 1) * gap;
+  const startX  = cx - totalW / 2;
+  const btnY    = cy + titleSz * 0.75;
 
-  // ── Stage buttons ────────────────────────────────────────────────────────
-  const btnW   = Math.round(Math.min(canvas.width * 0.24, canvas.height * 0.22));
-  const btnH   = Math.round(canvas.height * 0.072);
-  const btnSz  = Math.round(canvas.height * 0.018);
-  const gap    = Math.round(canvas.width  * 0.04);
-  const totalW = stageLabels.length * btnW + (stageLabels.length - 1) * gap;
-  const startX = cx - totalW / 2;
-  const btnY   = cy + titleSz * 1.45;
+  if (isQA) {
+    ctx.font      = `${subSz}px 'Press Start 2P', monospace`;
+    ctx.fillStyle = 'rgba(150, 220, 255, 0.70)';
+    ctx.fillText('SELECT STAGE', cx, btnY - subSz * 1.8);
+  }
 
   stageLabels.forEach((label, i) => {
     const bx = startX + i * (btnW + gap);

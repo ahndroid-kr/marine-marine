@@ -480,7 +480,7 @@ function drawScorePopups() {
 function draw() {
   if (GS.phase === 'title') {
     drawBg();
-    drawTitle(ctx, canvas, STAGE_LABELS, titleBtnBounds);
+    drawTitle(ctx, canvas, QA_MODE ? STAGE_LABELS : ['START'], titleBtnBounds);
     return;
   }
   drawBg();
