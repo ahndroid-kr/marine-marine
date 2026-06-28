@@ -578,6 +578,8 @@ canvas.addEventListener('touchstart', e => {
   e.preventDefault();
   const t  = e.touches[0];
   const px = t.clientX, py = t.clientY;
+  // UI hit-tests use raw coordinates; player movement uses offset so finger doesn't cover sprite
+  const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13); // ~80px at 600h
   if (GS.phase === 'title') {
     for (let i = 0; i < titleBtnBounds.length; i++) {
       if (inRect(px, py, titleBtnBounds[i])) { startStage(i + 1); return; }
@@ -587,14 +589,15 @@ canvas.addEventListener('touchstart', e => {
   if (handlePauseOrRestart(px, py)) return;
   if (paused) return;
   if (GS.phase === 'gameover' || GS.phase === 'stageclear') { handleClearOrGameover(); return; }
-  player.setTarget(px, py);
+  player.setTarget(px, py - TOUCH_Y_OFFSET);
 }, { passive: false });
 
 canvas.addEventListener('touchmove', e => {
   e.preventDefault();
   if (paused) return;
   const t = e.touches[0];
-  player.setTarget(t.clientX, t.clientY);
+  const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13);
+  player.setTarget(t.clientX, t.clientY - TOUCH_Y_OFFSET);
 }, { passive: false });
 
 canvas.addEventListener('touchend', e => { e.preventDefault(); }, { passive: false });
