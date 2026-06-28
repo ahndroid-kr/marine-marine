@@ -1,4 +1,4 @@
-const CACHE = 'marine-marine-v2';
+const CACHE = 'marine-marine-v3';
 
 const PRECACHE = [
   './',

@@ -53,9 +53,15 @@ function drawUI(ctx, canvas) {
   const BTN_X = canvas.width - PAD - BTN;
   const BTN_Y = (BAR_H - BTN) / 2;
 
+  // Hit area is larger than the visual to ensure a comfortable touch target on mobile.
+  // Visual button ~28px; hit box extends to top-right corner (≥80px wide, ≥60px tall).
   if (typeof pauseBtnBounds !== 'undefined') {
-    pauseBtnBounds.x = BTN_X; pauseBtnBounds.y = BTN_Y;
-    pauseBtnBounds.w = BTN;   pauseBtnBounds.h = BTN;
+    const HIT_W = Math.max(BTN + PAD * 2, 80);
+    const HIT_H = Math.max(BAR_H, 60);
+    pauseBtnBounds.x = canvas.width - HIT_W;
+    pauseBtnBounds.y = 0;
+    pauseBtnBounds.w = HIT_W;
+    pauseBtnBounds.h = HIT_H;
   }
 
   ctx.fillStyle   = 'rgba(0, 229, 255, 0.08)';
