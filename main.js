@@ -414,21 +414,34 @@ function update() {
   // Enemy body vs player
   if (GS.invincible > 0) {
     for (const e of enemies) {
+      if (e._giantDmgTimer > 0) e._giantDmgTimer--;
       if (e.dead || e.dying) continue;
       if (overlap(e, player)) {
         if (e.invincibleTimer > 0) continue;
+        if (e._giantDmgTimer > 0) continue;
+        const isBossType = e instanceof MidbossRay || e instanceof BossPuffer ||
+                           e instanceof MidbossTurtle || e instanceof BossShark;
         if (e.onHit) e.onHit();
-        e.hp = 0;
-        GS.score += e.scoreValue;
-        if (e.onDeath) e.onDeath();
-        else e.dead = true;
-        if (e.getDrops) {
-          for (const d of e.getDrops()) items.push(new Item(d.x, d.y, d.type, d.sizeScale));
-        } else if (e.dropLife) {
-          items.push(new Item(e.x, e.y, 'life'));
+        if (isBossType && e.maxHp) {
+          // Giant damage capped at 30% of boss maxHp per hit, 1s cooldown
+          const dmg = Math.min(e.hp, Math.floor(e.maxHp * 0.30));
+          e.hp -= dmg;
+          e._giantDmgTimer = 60;
         } else {
-          const drop = rollDrop(e.x, e.y);
-          if (drop) items.push(drop);
+          e.hp = 0;
+        }
+        if (e.hp <= 0) {
+          GS.score += e.scoreValue;
+          if (e.onDeath) e.onDeath();
+          else e.dead = true;
+          if (e.getDrops) {
+            for (const d of e.getDrops()) items.push(new Item(d.x, d.y, d.type, d.sizeScale));
+          } else if (e.dropLife) {
+            items.push(new Item(e.x, e.y, 'life'));
+          } else {
+            const drop = rollDrop(e.x, e.y);
+            if (drop) items.push(drop);
+          }
         }
       }
     }
