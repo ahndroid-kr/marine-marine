@@ -135,6 +135,29 @@ function drawUI(ctx, canvas) {
   ctx.fillText('STAGE 1', PAD, midY);
   ctx.shadowBlur  = 0;
 
+  // ── QA MODE badge ────────────────────────────────────────────────────────
+  if (typeof QA_MODE !== 'undefined' && QA_MODE) {
+    const qsz  = Math.round(canvas.height * 0.016);
+    const qpad = Math.round(canvas.height * 0.008);
+    ctx.save();
+    ctx.font = `${qsz}px 'Press Start 2P', monospace`;
+    const qw = ctx.measureText('QA').width + qpad * 2;
+    const qh = qsz + qpad * 2;
+    const qx = canvas.width / 2 - qw / 2;
+    const qy = BAR_H + Math.round(canvas.height * 0.008);
+    ctx.fillStyle   = 'rgba(255, 200, 0, 0.18)';
+    ctx.strokeStyle = '#ffcc00';
+    ctx.lineWidth   = 1;
+    roundRect(ctx, qx, qy, qw, qh, 3);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle    = '#ffcc00';
+    ctx.textAlign    = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('QA', canvas.width / 2, qy + qh / 2);
+    ctx.restore();
+  }
+
   ctx.restore();
 }
 
