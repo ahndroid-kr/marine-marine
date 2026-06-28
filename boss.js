@@ -377,7 +377,18 @@ class MidbossTurtle {
     const margin = this.h / 2 + 10;
     this.y = Math.max(margin, Math.min(this.canvas.height - margin, this.y));
 
-    if (this.x < -(this.w + 40)) { this.dead = true; return null; }
+    if (this.x < -(this.w + 40)) {
+      // Re-enter from the right at a random Y; only die when HP reaches 0
+      const uiH = Math.round(this.canvas.height * 0.085);
+      const reMargin = this.h / 2 + 10;
+      this.x           = this.canvas.width + this.w / 2;
+      this.y           = uiH + reMargin + Math.random() * (this.canvas.height - uiH - reMargin * 2);
+      this.burstActive     = false;
+      this.burstTimer      = 0;
+      this.burstShotsFired = 0;
+      this.fireTimer       = 0;
+      return null;
+    }
 
     const shots = [];
     const px = player ? player.x : 0;
