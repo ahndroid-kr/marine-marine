@@ -304,15 +304,16 @@ function startStage(num) {
 
 // ─── Stage transition timing ──────────────────────────────────────────────────
 const LAST_STAGE     = STAGE_DEFS[STAGE_DEFS.length - 1].stageObj;
-const COLLECT_FRAMES = 300;   // 5s item collection
+const COLLECT_FRAMES = 180;   // 3s item collection
 const FADEOUT_FRAMES = 75;    // 1.25s fade to black
 const HOLD_FRAMES    = 45;    // 0.75s full black (next stage prepped at midpoint)
 const FADEIN_FRAMES  = 75;    // 1.25s fade from black
 const PREP_FRAME     = COLLECT_FRAMES + FADEOUT_FRAMES + Math.floor(HOLD_FRAMES / 2);
 const DONE_FRAME     = COLLECT_FRAMES + FADEOUT_FRAMES + HOLD_FRAMES + FADEIN_FRAMES;
 
-let _nextStageLabel  = '';   // "STAGE 2" shown during blackout
-let _nextStagePrepped = false;
+let _nextStageLabel    = '';    // "STAGE 2" shown during blackout
+let _nextStagePrepped  = false;
+let _clearIsLastStage  = false; // cached at stageclear start; stays correct after _prepNextStage() swaps currentStage
 
 function _prepNextStage() {
   const idx = STAGE_DEFS.findIndex(d => d.stageObj === currentStage);
@@ -357,8 +358,12 @@ function update() {
     updateParticles();
     updateShake();
 
-    const isLast = currentStage === LAST_STAGE;
-    const t      = GS.clearTimer;
+    const t = GS.clearTimer;
+
+    // Cache isLast at the very first frame of stageclear so it stays stable
+    // even after _prepNextStage() replaces currentStage with the next (possibly LAST) stage.
+    if (t === 1) _clearIsLastStage = (currentStage === LAST_STAGE);
+    const isLast = _clearIsLastStage;
 
     if (isLast) {
       // Last stage: just let player collect, tap to continue
@@ -650,8 +655,8 @@ function draw() {
   // UI and overlays — no shake
   drawUI(ctx, canvas);
   currentStage.draw(ctx, canvas);
-  if (GS.phase === 'stageclear' && currentStage === LAST_STAGE) drawStageClear(ctx, canvas, true);
-  if (GS.phase === 'stageclear' && currentStage !== LAST_STAGE) _drawTransitionOverlay();
+  if (GS.phase === 'stageclear' && _clearIsLastStage)  drawStageClear(ctx, canvas, true);
+  if (GS.phase === 'stageclear' && !_clearIsLastStage) _drawTransitionOverlay();
   if (GS.phase === 'gameover')   drawGameOver(ctx, canvas);
   if (paused && GS.phase === 'playing') drawPaused(ctx, canvas);
 }
