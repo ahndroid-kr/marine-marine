@@ -186,8 +186,8 @@ class BossPuffer {
     this.arrived   = false;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.25); }
-  get h() { return Math.round(this.canvas.height * 0.25); }
+  get w() { return Math.round(this.canvas.height * 0.50); }
+  get h() { return Math.round(this.canvas.height * 0.50); }
 
   // Attack phase based on HP ratio
   get attackPhase() {
@@ -538,8 +538,8 @@ class BossShark {
     this.angryFlip     = false;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.26); }
-  get h() { return Math.round(this.canvas.height * 0.13); }
+  get w() { return Math.round(this.canvas.height * 0.52); }
+  get h() { return Math.round(this.canvas.height * 0.26); }
 
   get attackPhase() {
     const r = this.hp / this.maxHp;

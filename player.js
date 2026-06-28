@@ -69,7 +69,7 @@ class Player {
 
   draw(ctx) {
     ctx.save();
-    const scale = GS.giant ? 1.5 : 1.0;
+    const scale = GS.giant ? 2.0 : 1.0;
     const drawW = this.w * scale;
     const drawH = this.h * scale;
     ctx.translate(Math.round(this.x), Math.round(this.y));
