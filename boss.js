@@ -636,23 +636,6 @@ class BossShark {
         if (this.dashCooldown <= 0) this.dashing = true;
       }
 
-      // Phase 3: minion spawn every 8s
-      if (ap === 3) {
-        this.minionTimer++;
-        if (this.minionTimer >= 120) {
-          this.minionTimer = 0;
-          const px  = player ? player.x : 0;
-          const py  = player ? player.y : this.canvas.height / 2;
-          const sx  = this.x - this.w / 2 - 10;
-          const off = this.h * 0.5;
-          this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, this.y - off, px, py));
-          this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, this.y + off, px, py));
-        }
-        // angry anim toggle
-        this.angryTimer++;
-        if (this.angryTimer >= 20) { this.angryTimer = 0; this.angryFlip = !this.angryFlip; }
-      }
-
       // Fire when hovering
       const fireRate = ap === 1 ? 150 : 120;
       this.fireTimer++;
@@ -660,6 +643,25 @@ class BossShark {
         this.fireTimer = 0;
         return this._fire3Way();
       }
+    }
+
+    // Phase 3: minion spawn timer — always counts regardless of dash/advance state
+    if (ap === 3) {
+      this.minionTimer++;
+      if (this.minionTimer >= 120) {
+        this.minionTimer = 0;
+        const px  = player ? player.x : 0;
+        const py  = player ? player.y : this.canvas.height / 2;
+        const cx  = this.arrived ? this.x : this.canvas.width * 0.60;
+        const cy  = this.y;
+        const sx  = cx - this.w / 2 - 10;
+        const off = this.h * 0.5;
+        this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, cy - off, px, py));
+        this.pendingSpawns.push(new BossSharkMinion(this.canvas, sx, cy + off, px, py));
+      }
+      // angry anim toggle
+      this.angryTimer++;
+      if (this.angryTimer >= 20) { this.angryTimer = 0; this.angryFlip = !this.angryFlip; }
     }
 
     return null;
