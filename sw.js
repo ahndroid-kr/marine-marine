@@ -1,4 +1,4 @@
-const CACHE = 'marine-marine-v9';
+const CACHE = 'marine-marine-v10';
 
 const PRECACHE = [
   './',
@@ -16,10 +16,13 @@ const PRECACHE = [
   './deco.js',
   './stage/stage1.js',
   './stage/stage2.js',
+  './stage/stage3.js',
   './main.js',
   './manifest.json',
   './assets/images/bg_stage1.png',
   './assets/images/bg_stage2.png',
+  './assets/images/bg_stage3.png',
+  './assets/images/bg_stage3_deco.png',
   './assets/images/player.png',
   './assets/images/ui_heart.png',
   './assets/images/boss_puffer_1.png',

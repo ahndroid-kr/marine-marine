@@ -93,6 +93,12 @@ function updatePlants() {
 
 // ─── Draw background ──────────────────────────────────────────────────────────
 function drawBg() {
+  // Stage-specific background replaces standard bg entirely
+  if (currentStage && typeof currentStage.drawBackground === 'function') {
+    currentStage.drawBackground(ctx, canvas);
+    return;
+  }
+
   if (bgImg.complete && bgImg.naturalWidth > 0) {
     // Tile horizontally: scale image to canvas height, scroll
     const iw     = Math.round(bgImg.naturalWidth * (GAME_H / bgImg.naturalHeight));
@@ -256,6 +262,7 @@ function clientToCanvas(cx, cy) {
 const STAGE_DEFS = [
   { label: 'STAGE 1', stageObj: stage1, bg: 'assets/images/bg_stage1.png' },
   { label: 'STAGE 2', stageObj: stage2, bg: 'assets/images/bg_stage2.png' },
+  { label: 'STAGE 3', stageObj: stage3, bg: 'assets/images/bg_stage3.png' },
 ];
 const STAGE_LABELS = STAGE_DEFS.map(d => d.label);
 
@@ -357,6 +364,9 @@ function update() {
     updateDecos(canvas);
     updateParticles();
     updateShake();
+    if (currentStage && typeof currentStage.updateBackground === 'function') {
+      currentStage.updateBackground(canvas);
+    }
 
     const t = GS.clearTimer;
 
@@ -643,6 +653,9 @@ function draw() {
   if (doShake) { ctx.save(); ctx.translate(sx, sy); }
 
   drawBg();
+  if (currentStage && typeof currentStage.drawGlowParticles === 'function') {
+    currentStage.drawGlowParticles(ctx);
+  }
   drawParticles(ctx);
   items.forEach(item => item.draw(ctx));
   enemies.forEach(e => e.draw(ctx));
