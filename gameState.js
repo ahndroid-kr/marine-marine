@@ -1,3 +1,5 @@
+const QA_MODE = true;
+
 const GS = {
   score: 0,
   lives: 3,

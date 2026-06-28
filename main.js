@@ -246,7 +246,7 @@ function startStage(num) {
   scorePopups   = [];
   frame         = 0;
   GS.score      = 0;
-  GS.lives      = 3;
+  GS.lives      = QA_MODE ? 99 : 3;
   GS.phase      = 'playing';
   GS.scrollX    = 0;
   GS.powerLevel = 0;
