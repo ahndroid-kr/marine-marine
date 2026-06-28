@@ -299,8 +299,8 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
   ctx.fillStyle    = '#f5f0e0';
   ctx.shadowColor  = 'rgba(245, 240, 224, 0.30)';
   ctx.shadowBlur   = 12;
-  ctx.fillText('MARINE', cx, cy - titleSz * 1.35);
-  ctx.fillText('MARINE', cx, cy - titleSz * 0.25);
+  ctx.fillText('MARINE', cx, cy - titleSz * 1.60);
+  ctx.fillText('MARINE', cx, cy - titleSz * 0.50);
   ctx.shadowBlur   = 0;
 
   // ── Buttons ──────────────────────────────────────────────────────────────
@@ -312,7 +312,7 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
   const gap     = Math.round(canvas.width  * 0.04);
   const totalW  = stageLabels.length * btnW + (stageLabels.length - 1) * gap;
   const startX  = cx - totalW / 2;
-  const btnY    = cy + titleSz * 0.75;
+  const btnY    = cy + titleSz * 1.60;
 
   if (isQA) {
     ctx.font      = `${subSz}px 'Press Start 2P', monospace`;
