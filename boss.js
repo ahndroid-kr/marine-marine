@@ -26,6 +26,18 @@ bossSharkMinionImg.src = 'assets/images/boss_shark_minion.png';
 const effectAngryImg = new Image();
 effectAngryImg.src = 'assets/images/effect_angry.png';
 
+// ctx must already be translated to the boss centre when this is called.
+// color: fixed CSS string for mid-bosses, null for dynamic green→yellow→red.
+function drawBossHpBar(ctx, bossW, canvasH, hh, hp, maxHp, { wRatio = 0.225, hRatio = 0.0075, color = null } = {}) {
+  const barW = Math.round(bossW * wRatio);
+  const barH = Math.round(canvasH * hRatio);
+  const pct  = hp / maxHp;
+  ctx.fillStyle = 'rgba(0,0,0,0.5)';
+  ctx.fillRect(-barW / 2 - 1, hh + 8, barW + 2, barH + 2);
+  ctx.fillStyle = color ?? (pct > 0.66 ? '#00cc44' : pct > 0.33 ? '#ffaa00' : '#ff3300');
+  ctx.fillRect(-barW / 2, hh + 9, barW * pct, barH);
+}
+
 // ─── Mid-boss ────────────────────────────────────────────────────────────────
 class MidbossRay {
   constructor(canvas) {
@@ -147,11 +159,7 @@ class MidbossRay {
       ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
       ctx.restore();
     }
-    const barW = Math.round(this.w * 0.7), barH = Math.round(this.canvas.height * 0.012);
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(-barW / 2 - 1, hh + 8, barW + 2, barH + 2);
-    ctx.fillStyle = '#ff9900';
-    ctx.fillRect(-barW / 2, hh + 9, barW * (this.hp / this.maxHp), barH);
+    drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp, { wRatio: 0.175, hRatio: 0.006, color: '#ff9900' });
     ctx.restore();
   }
 }
@@ -318,15 +326,8 @@ class BossPuffer {
     ctx.drawImage(this.currentImg, -half, -half, this.w, this.h);
     ctx.globalAlpha = 1;
 
-    if (!this.dying) {
-      const barW = Math.round(this.w * 0.9);
-      const barH = Math.round(this.canvas.height * 0.015);
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(-barW / 2 - 1, half + 8, barW + 2, barH + 2);
-      const pct = this.hp / this.maxHp;
-      ctx.fillStyle = pct > 0.6 ? '#00cc44' : pct > 0.3 ? '#ffaa00' : '#ff3300';
-      ctx.fillRect(-barW / 2, half + 9, barW * pct, barH);
-    }
+    if (!this.dying)
+      drawBossHpBar(ctx, this.w, this.canvas.height, half, this.hp, this.maxHp);
     ctx.restore();
   }
 }
@@ -456,11 +457,7 @@ class MidbossTurtle {
       ctx.restore();
     }
 
-    const barW = Math.round(this.w * 0.7), barH = Math.round(this.canvas.height * 0.012);
-    ctx.fillStyle = 'rgba(0,0,0,0.5)';
-    ctx.fillRect(-barW / 2 - 1, hh + 8, barW + 2, barH + 2);
-    ctx.fillStyle = '#ff9900';
-    ctx.fillRect(-barW / 2, hh + 9, barW * (this.hp / this.maxHp), barH);
+    drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp, { wRatio: 0.175, hRatio: 0.006, color: '#ff9900' });
     ctx.restore();
   }
 }
@@ -706,15 +703,8 @@ class BossShark {
       ctx.drawImage(effectAngryImg, ex, -hh - sz * 0.5, sz, sz);
     }
 
-    if (!this.dying) {
-      const barW = Math.round(this.w * 0.9);
-      const barH = Math.round(this.canvas.height * 0.015);
-      ctx.fillStyle = 'rgba(0,0,0,0.5)';
-      ctx.fillRect(-barW / 2 - 1, hh + 8, barW + 2, barH + 2);
-      const pct = this.hp / this.maxHp;
-      ctx.fillStyle = pct > 0.66 ? '#00cc44' : pct > 0.33 ? '#ffaa00' : '#ff3300';
-      ctx.fillRect(-barW / 2, hh + 9, barW * pct, barH);
-    }
+    if (!this.dying)
+      drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp);
     ctx.restore();
   }
 }
