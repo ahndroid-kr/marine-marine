@@ -528,8 +528,8 @@ class BossShark {
     this.hitFlash      = 0;
     this.deadTimer     = 0;
     this.hitEffects    = [];
-    this.fireTimer     = 0;
-    this.vx            = -0.8 * canvas.height / 600;
+    this.fireTimer     = 149; // pre-charged: fires on the first frame after arriving
+    this.vx            = -3 * canvas.height / 600;
     this.arrived       = false;
     // Phase 2/3 dash
     this.dashing       = false;
