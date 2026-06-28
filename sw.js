@@ -1,9 +1,10 @@
-const CACHE = 'marine-marine-v1';
+const CACHE = 'marine-marine-v2';
 
 const PRECACHE = [
   './',
   './index.html',
   './gameState.js',
+  './effects.js',
   './player.js',
   './enemy.js',
   './boss.js',

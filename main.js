@@ -334,6 +334,8 @@ function update() {
     updateBg();
     updatePlants();
     updateDecos(canvas);
+    updateParticles();
+    updateShake();
 
     const isLast = currentStage === LAST_STAGE;
     const t      = GS.clearTimer;
@@ -397,6 +399,9 @@ function update() {
   updateBg();
   updatePlants();
   updateDecos(canvas);
+
+  updateParticles();
+  updateShake();
 
   if (GS.invincible > 0) {
     GS.invincible--;
@@ -473,6 +478,7 @@ function update() {
         if (e.onHit) e.onHit();
         e.hp--;
         if (e.hp <= 0) {
+          enemyDeathFX(e);
           GS.score += e.scoreValue;
           if (e.onDeath) e.onDeath();
           else e.dead = true;
@@ -509,6 +515,7 @@ function update() {
           e.hp = 0;
         }
         if (e.hp <= 0) {
+          enemyDeathFX(e);
           GS.score += e.scoreValue;
           if (e.onDeath) e.onDeath();
           else e.dead = true;
@@ -533,6 +540,7 @@ function update() {
           if (e.onHit) e.onHit();
           e.hp--;
           if (e.hp <= 0) {
+            enemyDeathFX(e);
             GS.score += e.scoreValue;
             if (e.onDeath) e.onDeath();
             else e._dead = true;
@@ -602,13 +610,24 @@ function draw() {
     drawTitle(ctx, canvas, QA_MODE ? STAGE_LABELS : ['START'], titleBtnBounds);
     return;
   }
+
+  // Game world with screen shake
+  const { x: sx, y: sy } = getShakeOffset();
+  const doShake = sx !== 0 || sy !== 0;
+  if (doShake) { ctx.save(); ctx.translate(sx, sy); }
+
   drawBg();
+  drawParticles(ctx);
   items.forEach(item => item.draw(ctx));
   enemies.forEach(e => e.draw(ctx));
   bullets.forEach(b => b.draw(ctx));
   pets.forEach(p => p.draw(ctx));
   player.draw(ctx);
   drawScorePopups();
+
+  if (doShake) ctx.restore();
+
+  // UI and overlays — no shake
   drawUI(ctx, canvas);
   currentStage.draw(ctx, canvas);
   if (GS.phase === 'stageclear' && currentStage === LAST_STAGE) drawStageClear(ctx, canvas, true);
