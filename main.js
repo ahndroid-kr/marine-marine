@@ -191,10 +191,10 @@ function applyItem(type, px, py) {
 
 // ─── Resize ───────────────────────────────────────────────────────────────────
 function resize() {
-  // Match canvas resolution to its CSS-rendered size so coordinates always align
-  const rect = canvas.getBoundingClientRect();
-  canvas.width  = Math.round(rect.width)  || window.innerWidth;
-  canvas.height = Math.round(rect.height) || window.innerHeight;
+  canvas.width        = window.innerWidth;
+  canvas.height       = window.innerHeight;
+  canvas.style.width  = canvas.width  + 'px';
+  canvas.style.height = canvas.height + 'px';
   if (player) player.clamp();
 }
 
@@ -210,12 +210,16 @@ function onResize() {
   }, 150);
 }
 
-// Convert CSS-pixel client coordinates → canvas pixel coordinates
+// canvas is position:fixed top:0 left:0 at exact viewport size — client coords = canvas coords
 function clientToCanvas(cx, cy) {
-  const rect = canvas.getBoundingClientRect();
-  const sx = canvas.width  / (rect.width  || canvas.width);
-  const sy = canvas.height / (rect.height || canvas.height);
-  return { x: (cx - rect.left) * sx, y: (cy - rect.top) * sy };
+  // Ensure canvas resolution matches viewport (guards against stale resize)
+  if (canvas.width !== window.innerWidth || canvas.height !== window.innerHeight) {
+    canvas.width        = window.innerWidth;
+    canvas.height       = window.innerHeight;
+    canvas.style.width  = canvas.width  + 'px';
+    canvas.style.height = canvas.height + 'px';
+  }
+  return { x: cx, y: cy };
 }
 
 // ─── Stage definitions (add entries here to extend to future stages) ──────────
@@ -239,7 +243,9 @@ function init() {
 
 // ─── Start a specific stage (called from title screen) ────────────────────────
 function startStage(num) {
+  console.log('[startStage] num=' + num);
   const def     = STAGE_DEFS[num - 1];
+  if (!def) { console.error('[startStage] no stage def for num=' + num); return; }
   paused        = false;
   player        = new Player(canvas);
   bullets       = [];
@@ -541,7 +547,15 @@ function draw() {
 }
 
 // ─── Loop ─────────────────────────────────────────────────────────────────────
-function loop() { update(); draw(); requestAnimationFrame(loop); }
+function loop() {
+  try {
+    update();
+    draw();
+  } catch (err) {
+    console.error('[loop error]', err);
+  }
+  requestAnimationFrame(loop);
+}
 
 // ─── Input ────────────────────────────────────────────────────────────────────
 function handlePauseOrRestart(px, py) {
@@ -582,10 +596,17 @@ canvas.addEventListener('touchstart', e => {
   const pos = clientToCanvas(t.clientX, t.clientY);
   const px  = pos.x, py = pos.y;
   const TOUCH_Y_OFFSET = Math.round(canvas.height * 0.13);
+  console.log('[touch] phase=' + GS.phase + ' px=' + Math.round(px) + ' py=' + Math.round(py) + ' canvas=' + canvas.width + 'x' + canvas.height + ' bounds=' + titleBtnBounds.length);
   if (GS.phase === 'title') {
     for (let i = 0; i < titleBtnBounds.length; i++) {
-      if (inRect(px, py, titleBtnBounds[i])) { startStage(i + 1); return; }
+      const b = titleBtnBounds[i];
+      console.log('[touch] btn[' + i + '] x=' + Math.round(b.x) + ' y=' + Math.round(b.y) + ' w=' + Math.round(b.w) + ' h=' + Math.round(b.h));
+      if (inRect(px, py, b)) {
+        console.log('[touch] HIT btn ' + i + ' → startStage(' + (i + 1) + ')');
+        startStage(i + 1); return;
+      }
     }
+    console.log('[touch] no button hit on title');
     return;
   }
   if (handlePauseOrRestart(px, py)) return;
