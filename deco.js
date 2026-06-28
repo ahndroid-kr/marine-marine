@@ -21,7 +21,7 @@ const _DECO_NAT = {
   deco_jellyfish_1:  { w: 48,  h: 48  },
   deco_jellyfish_2:  { w: 36,  h: 42  },
   deco_bubble_1:     { w: 36,  h: 94  },
-  deco_bubble_2:     { w: 36,  h: 482 },
+  deco_bubble_2:     { w: 96,  h: 48  },
   deco_fish_group_1: { w: 128, h: 56  },
   deco_fish_group_2: { w: 96,  h: 48  },
 };
