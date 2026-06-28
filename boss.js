@@ -1,30 +1,28 @@
-const midbossRayImg = new Image();
-midbossRayImg.src = 'assets/images/midboss_ray.png';
+function _loadImg(src) {
+  const img = new Image();
+  img.src = src;
+  img.decode().catch(() => {});
+  return img;
+}
 
-const bossPufferImgs = { 1: new Image(), 2: new Image(), dead: new Image() };
-bossPufferImgs[1].src = 'assets/images/boss_puffer_1.png';
-bossPufferImgs[2].src = 'assets/images/boss_puffer_2.png';
-bossPufferImgs.dead.src = 'assets/images/boss_puffer_dead.png';
+const midbossRayImg      = _loadImg('assets/images/midboss_ray.png');
+const effectBossHitImg   = _loadImg('assets/images/effect_boss_hit.png');
+const midbossTurtleImg   = _loadImg('assets/images/midboss_turtle.png');
+const bulletTurtleShellImg = _loadImg('assets/images/bullet_turtle_shell.png');
+const bossSharkMinionImg = _loadImg('assets/images/boss_shark_minion.png');
+const effectAngryImg     = _loadImg('assets/images/effect_angry.png');
 
-const effectBossHitImg = new Image();
-effectBossHitImg.src = 'assets/images/effect_boss_hit.png';
+const bossPufferImgs = {
+  1:    _loadImg('assets/images/boss_puffer_1.png'),
+  2:    _loadImg('assets/images/boss_puffer_2.png'),
+  dead: _loadImg('assets/images/boss_puffer_dead.png'),
+};
 
-const midbossTurtleImg = new Image();
-midbossTurtleImg.src = 'assets/images/midboss_turtle.png';
-
-const bulletTurtleShellImg = new Image();
-bulletTurtleShellImg.src = 'assets/images/bullet_turtle_shell.png';
-
-const bossSharkImgs = { 1: new Image(), 2: new Image(), dead: new Image() };
-bossSharkImgs[1].src   = 'assets/images/boss_shark_1.png';
-bossSharkImgs[2].src   = 'assets/images/boss_shark_2.png';
-bossSharkImgs.dead.src = 'assets/images/boss_shark_dead.png';
-
-const bossSharkMinionImg = new Image();
-bossSharkMinionImg.src = 'assets/images/boss_shark_minion.png';
-
-const effectAngryImg = new Image();
-effectAngryImg.src = 'assets/images/effect_angry.png';
+const bossSharkImgs = {
+  1:    _loadImg('assets/images/boss_shark_1.png'),
+  2:    _loadImg('assets/images/boss_shark_2.png'),
+  dead: _loadImg('assets/images/boss_shark_dead.png'),
+};
 
 // ctx must already be translated to the boss centre when this is called.
 // color: fixed CSS string for mid-bosses, null for dynamic green→yellow→red.

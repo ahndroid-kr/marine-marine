@@ -1,13 +1,17 @@
 const enemyImgs = {};
 ['squid', 'shrimp', 'hairtail'].forEach(t => {
-  enemyImgs[t] = new Image();
-  enemyImgs[t].src = `assets/images/enemy_${t}.png`;
+  const img = new Image();
+  img.src = `assets/images/enemy_${t}.png`;
+  img.decode().catch(() => {});
+  enemyImgs[t] = img;
 });
 
 const enemyStage2Imgs = {};
 ['porgy', 'filefish', 'flounder'].forEach(t => {
-  enemyStage2Imgs[t] = new Image();
-  enemyStage2Imgs[t].src = `assets/images/enemy_${t}.png`;
+  const img = new Image();
+  img.src = `assets/images/enemy_${t}.png`;
+  img.decode().catch(() => {});
+  enemyStage2Imgs[t] = img;
 });
 
 // Size ratios relative to canvas.height
