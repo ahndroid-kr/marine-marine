@@ -89,6 +89,7 @@ function drawUI(ctx, canvas) {
   const dispHearts  = Math.min(GS.lives, MAX_HEARTS);
   const extraLives  = GS.lives - MAX_HEARTS;
   const extraLabel  = extraLives > 0 ? `+${extraLives}` : '';
+  ctx.font = `${FSZ}px 'Press Start 2P', monospace`;
   const extraLabelW = extraLives > 0 ? ctx.measureText(extraLabel).width + HGAP : 0;
   const totalHeartW = dispHearts * HEART + Math.max(0, dispHearts - 1) * HGAP + extraLabelW;
   let hx = BTN_X - PAD - totalHeartW;
