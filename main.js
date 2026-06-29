@@ -481,7 +481,7 @@ function update() {
   for (const e of enemies) {
     const shots = e.update(player);
     if (shots) {
-      const isBoss = e instanceof BossPuffer || e instanceof BossShark;
+      const isBoss = e instanceof BossPuffer || e instanceof BossShark || e instanceof BossWitch || e instanceof MidbossSunfish;
       for (const s of shots) {
         const opts = s.img ? { img: s.img, w: s.bw, h: s.bh } : {};
         bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false, isBoss, false, opts));
@@ -542,7 +542,8 @@ function update() {
         if (e.invincibleTimer > 0) continue;
         if (e._giantDmgTimer > 0) continue;
         const isBossType = e instanceof MidbossRay || e instanceof BossPuffer ||
-                           e instanceof MidbossTurtle || e instanceof BossShark;
+                           e instanceof MidbossTurtle || e instanceof BossShark ||
+                           e instanceof MidbossSunfish || e instanceof BossWitch;
         if (e.onHit) e.onHit();
         if (isBossType && e.maxHp) {
           // Giant damage capped at 30% of boss maxHp per hit, 1s cooldown

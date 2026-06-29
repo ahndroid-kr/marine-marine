@@ -465,6 +465,305 @@ class MidbossTurtle {
   }
 }
 
+// ─── Stage 3 images ───────────────────────────────────────────────────────────
+const midbossSunfishImg = _loadImg('assets/images/midboss_sunfish.png');
+const effectWitchImg    = _loadImg('assets/images/effect_witch.png');
+
+const bossWitchImgs = {
+  1:    _loadImg('assets/images/boss_witch_1.png'),
+  2:    _loadImg('assets/images/boss_witch_2.png'),
+  dead: _loadImg('assets/images/boss_witch_dead.png'),
+};
+
+// ─── Stage 3 Mid-boss: MidbossSunfish ─────────────────────────────────────────
+class MidbossSunfish {
+  constructor(canvas) {
+    this.canvas          = canvas;
+    this.x               = canvas.width + 80;
+    this.y               = canvas.height / 2;
+    this.maxHp           = 30;
+    this.hp              = 30;
+    this.dead            = false;
+    this.dying           = false;
+    this.scoreValue      = 800;
+    this.dropLife        = false;
+    this.t               = 0;
+    this.hitFlash        = 0;
+    this.hitEffects      = [];
+    this.fireTimer       = 0;
+    this.radialTimer     = 0;
+    this.invincibleTimer = 0;
+    this._giantDmgTimer  = 0;
+  }
+
+  get w() { return Math.round(this.canvas.height * 0.240); }
+  get h() { return Math.round(this.canvas.height * 0.240); }
+
+  onHit() {
+    if (this.invincibleTimer > 0) return;
+    this.hitFlash = 6;
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = (this.w / 2) * (0.5 + Math.random() * 0.4);
+    this.hitEffects.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, timer: 12 });
+  }
+
+  update(player) {
+    const s   = this.canvas.height / 600;
+    const uiH = Math.round(this.canvas.height * 0.085);
+    this.t += 0.022;
+    if (this.hitFlash        > 0) this.hitFlash--;
+    if (this.invincibleTimer > 0) this.invincibleTimer--;
+    this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
+
+    const restX = this.canvas.width * 0.72;
+    if (this.x > restX) this.x -= 1.5 * s;
+
+    this.y += Math.sin(this.t) * 1.5 * s;
+    const margin = this.h / 2 + 10;
+    this.y = Math.max(uiH + margin, Math.min(this.canvas.height - margin, this.y));
+
+    if (this.x < -(this.w + 40)) {
+      this.x               = this.canvas.width + this.w / 2;
+      this.y               = this.canvas.height * 0.25 + Math.random() * this.canvas.height * 0.5;
+      this.fireTimer       = 0;
+      this.radialTimer     = 0;
+      this.invincibleTimer = 30;
+      return null;
+    }
+
+    const shots = [];
+
+    // Pattern 1: 3-way forward every 2.5s (150f)
+    this.fireTimer++;
+    if (this.fireTimer >= 150) {
+      this.fireTimer = 0;
+      const spd = 5 * s;
+      shots.push(
+        { x: this.x, y: this.y, vx: -spd, vy: -spd * 0.30 },
+        { x: this.x, y: this.y, vx: -spd, vy: 0            },
+        { x: this.x, y: this.y, vx: -spd, vy:  spd * 0.30  },
+      );
+    }
+
+    // Pattern 2 (HP ≤ 50%): 8-way radial every 4s (240f)
+    if (this.hp <= this.maxHp * 0.5) {
+      this.radialTimer++;
+      if (this.radialTimer >= 240) {
+        this.radialTimer = 0;
+        const spd = 4 * s;
+        for (let i = 0; i < 8; i++) {
+          const a = (Math.PI * 2 / 8) * i;
+          shots.push({ x: this.x, y: this.y, vx: spd * Math.cos(a), vy: spd * Math.sin(a) });
+        }
+      }
+    }
+
+    return shots.length ? shots : null;
+  }
+
+  draw(ctx) {
+    const hw = this.w / 2, hh = this.h / 2;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    if (midbossSunfishImg.complete && midbossSunfishImg.naturalWidth > 0)
+      ctx.drawImage(midbossSunfishImg, -hw, -hh, this.w, this.h);
+    ctx.globalAlpha = 1;
+    for (const e of this.hitEffects) {
+      ctx.save();
+      ctx.globalAlpha = e.timer / 12;
+      ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
+      ctx.restore();
+    }
+    drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
+      { wRatio: 0.175, hRatio: 0.006, color: '#ff9900' });
+    ctx.restore();
+  }
+}
+
+// ─── Stage 3 Final Boss: BossWitch ────────────────────────────────────────────
+class BossWitch {
+  constructor(canvas) {
+    this.canvas          = canvas;
+    this.x               = canvas.width + 200;
+    this.y               = canvas.height / 2;
+    this.maxHp           = 300;
+    this.hp              = 300;
+    this.dead            = false;
+    this.dying           = false;
+    this.scoreValue      = 3000;
+    this.t               = 0;
+    this.hitFlash        = 0;
+    this.deadTimer       = 0;
+    this.hitEffects      = [];
+    this.fireTimer       = 0;
+    this.minionTimer     = 0;
+    this.pendingSpawns   = [];
+    this._spiralAngle    = 0;
+    this._effectToggle   = false;
+    this._effectTimer    = 0;
+    this.vx              = -3 * canvas.height / 600;
+    this.arrived         = false;
+    this._giantDmgTimer  = 0;
+    this.invincibleTimer = 0;
+  }
+
+  get w() { return Math.round(this.canvas.height * 0.427); }
+  get h() { return Math.round(this.canvas.height * 0.427); }
+
+  get attackPhase() {
+    const r = this.hp / this.maxHp;
+    if (r > 0.66) return 1;
+    if (r > 0.33) return 2;
+    return 3;
+  }
+
+  get currentImg() {
+    if (this.dying) return bossWitchImgs.dead;
+    return this.attackPhase === 1 ? bossWitchImgs[1] : bossWitchImgs[2];
+  }
+
+  onHit() {
+    if (this.invincibleTimer > 0) return;
+    this.hitFlash = 6;
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = (this.w / 2) * (0.75 + Math.random() * 0.45);
+    this.hitEffects.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, timer: 14 });
+  }
+
+  onDeath() { this.dying = true; this.deadTimer = 0; }
+
+  getDrops() {
+    const sp    = this.w * 0.4;
+    const drops = [{ x: this.x, y: this.y, type: 'life', sizeScale: 2 }];
+    const count = 2 + Math.floor(Math.random() * 2);
+    const types = ['red', 'blue', 'yellow'];
+    for (let i = 0; i < count; i++) {
+      const a = (Math.PI * 2 / count) * i - Math.PI / 2;
+      drops.push({
+        x: this.x + Math.cos(a) * sp,
+        y: this.y + Math.sin(a) * sp,
+        type: types[Math.floor(Math.random() * types.length)],
+        sizeScale: 1,
+      });
+    }
+    return drops;
+  }
+
+  _magicShots3Way() {
+    const s   = this.canvas.height / 600;
+    const spd = 5.5 * s;
+    const bW  = Math.round(this.canvas.height * 0.064);
+    const bH  = Math.round(this.canvas.height * 0.100);
+    return [
+      { x: this.x - this.w / 2, y: this.y, vx: -spd, vy: -spd * 0.28, img: effectWitchImg, bw: bW, bh: bH },
+      { x: this.x - this.w / 2, y: this.y, vx: -spd, vy: 0,            img: effectWitchImg, bw: bW, bh: bH },
+      { x: this.x - this.w / 2, y: this.y, vx: -spd, vy:  spd * 0.28,  img: effectWitchImg, bw: bW, bh: bH },
+    ];
+  }
+
+  _spiralShots() {
+    const s     = this.canvas.height / 600;
+    const spd   = 5 * s;
+    const shots = [];
+    for (let i = 0; i < 6; i++) {
+      const a = this._spiralAngle + (Math.PI * 2 / 6) * i;
+      shots.push({ x: this.x, y: this.y, vx: spd * Math.cos(a), vy: spd * Math.sin(a) });
+    }
+    this._spiralAngle += Math.PI / 6;
+    return shots;
+  }
+
+  update(player) {
+    if (this.dying) {
+      this.deadTimer++;
+      if (this.deadTimer > 150) this.dead = true;
+      return null;
+    }
+
+    const s   = this.canvas.height / 600;
+    const ap  = this.attackPhase;
+    const uiH = Math.round(this.canvas.height * 0.085);
+    this.t += 0.018;
+    if (this.hitFlash        > 0) this.hitFlash--;
+    if (this.invincibleTimer > 0) this.invincibleTimer--;
+    this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
+
+    const restX  = this.canvas.width * 0.70;
+    const margin = this.h / 2 + 10;
+    if (!this.arrived) {
+      this.x += this.vx;
+      if (this.x <= restX) { this.x = restX; this.arrived = true; }
+    } else {
+      this.x = Math.max(this.w / 2 + 20, restX + Math.sin(this.t * 0.9) * (this.canvas.width * 0.02));
+    }
+    this.y += Math.sin(this.t * 0.8) * 1.0 * s;
+    this.y  = Math.max(uiH + margin, Math.min(this.canvas.height - margin, this.y));
+
+    // Phase 3 effect overlay toggle (cosmetic)
+    if (ap === 3) {
+      this._effectTimer++;
+      if (this._effectTimer >= 20) { this._effectTimer = 0; this._effectToggle = !this._effectToggle; }
+    }
+
+    // Fire patterns
+    const fireRate = ap === 1 ? 120 : ap === 2 ? 180 : 120;
+    this.fireTimer++;
+    if (this.fireTimer >= fireRate) {
+      this.fireTimer = 0;
+      if (ap === 2) return this._spiralShots();
+      return this._magicShots3Way();
+    }
+
+    // Phase 3: summon 3 squids every 8s (480f)
+    if (ap === 3) {
+      this.minionTimer++;
+      if (this.minionTimer >= 480) {
+        this.minionTimer = 0;
+        for (let i = 0; i < 3; i++) {
+          const sq = new Enemy(this.canvas, 'squid');
+          sq.x = this.x - this.w / 2 - 20;
+          sq.y = uiH + sq.h / 2 + Math.random() * (this.canvas.height - uiH - sq.h - 40);
+          this.pendingSpawns.push(sq);
+        }
+      }
+    }
+
+    return null;
+  }
+
+  draw(ctx) {
+    const hw = this.w / 2, hh = this.h / 2;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+
+    for (const e of this.hitEffects) {
+      ctx.save();
+      ctx.globalAlpha = e.timer / 14;
+      ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
+      ctx.restore();
+    }
+
+    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    ctx.drawImage(this.currentImg, -hw, -hh, this.w, this.h);
+    ctx.globalAlpha = 1;
+
+    // Phase 3: effect_witch overlay toggle
+    if (this.attackPhase === 3 && !this.dying && this._effectToggle
+        && effectWitchImg.complete && effectWitchImg.naturalWidth > 0) {
+      const eW = Math.round(this.canvas.height * 0.080);
+      const eH = Math.round(this.canvas.height * 0.125);
+      ctx.globalAlpha = 0.85;
+      ctx.drawImage(effectWitchImg, -hw - eW * 0.2, -hh - eH * 0.3, eW, eH);
+      ctx.globalAlpha = 1;
+    }
+
+    if (!this.dying)
+      drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp);
+    ctx.restore();
+  }
+}
+
 // ─── Stage 2 Boss Minion ──────────────────────────────────────────────────────
 // Spawned by BossShark phase 3. Dashes straight toward the player's position
 // at spawn time (direction is fixed — not tracking).
