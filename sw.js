@@ -1,4 +1,4 @@
-const CACHE = 'marine-marine-v10';
+const CACHE = 'marine-marine-v11';
 
 const PRECACHE = [
   './',
@@ -32,17 +32,28 @@ const PRECACHE = [
   './assets/images/boss_shark_2.png',
   './assets/images/boss_shark_dead.png',
   './assets/images/boss_shark_minion.png',
+  './assets/images/boss_witch_1.png',
+  './assets/images/boss_witch_2.png',
+  './assets/images/boss_witch_dead.png',
   './assets/images/midboss_ray.png',
+  './assets/images/midboss_sunfish.png',
   './assets/images/midboss_turtle.png',
   './assets/images/bullet_turtle_shell.png',
   './assets/images/bullet_bubble.png',
   './assets/images/bullet_bubble_large.png',
+  './assets/images/bullet_blacksmoker.png',
+  './assets/images/bullet_witch.png',
   './assets/images/enemy_squid.png',
   './assets/images/enemy_shrimp.png',
   './assets/images/enemy_hairtail.png',
   './assets/images/enemy_porgy.png',
   './assets/images/enemy_filefish.png',
   './assets/images/enemy_flounder.png',
+  './assets/images/enemy_spidercrab.png',
+  './assets/images/enemy_anglerfish_on.png',
+  './assets/images/enemy_anglerfish_off.png',
+  './assets/images/enemy_smoker.png',
+  './assets/images/enemy_krill.png',
   './assets/images/item_life.png',
   './assets/images/item_star_blue.png',
   './assets/images/item_star_green.png',
@@ -63,6 +74,7 @@ const PRECACHE = [
   './assets/images/deco_fish_group_2.png',
   './assets/images/effect_boss_hit.png',
   './assets/images/effect_angry.png',
+  './assets/images/effect_witch.png',
 ];
 
 self.addEventListener('install', e => {
