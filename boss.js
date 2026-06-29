@@ -585,7 +585,7 @@ class MidbossSunfish {
 class BossWitch {
   constructor(canvas) {
     this.canvas          = canvas;
-    this.x               = canvas.width + 200;
+    this.x               = canvas.width + 310;
     this.y               = canvas.height / 2;
     this.maxHp           = 300;
     this.hp              = 300;
