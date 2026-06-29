@@ -496,8 +496,8 @@ class MidbossSunfish {
     this._giantDmgTimer  = 0;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.240); }
-  get h() { return Math.round(this.canvas.height * 0.240); }
+  get w() { return Math.round(this.canvas.height * 0.288); }
+  get h() { return Math.round(this.canvas.height * 0.288); }
 
   onHit() {
     if (this.invincibleTimer > 0) return;
@@ -608,8 +608,8 @@ class BossWitch {
     this.invincibleTimer = 0;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.427); }
-  get h() { return Math.round(this.canvas.height * 0.427); }
+  get w() { return Math.round(this.canvas.height * 0.512); }
+  get h() { return Math.round(this.canvas.height * 0.512); }
 
   get attackPhase() {
     const r = this.hp / this.maxHp;

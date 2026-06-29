@@ -323,7 +323,7 @@ class EnemyFlounder {
 class EnemySpiderCrab {
   constructor(canvas) {
     this.canvas = canvas;
-    this.hp = 8;
+    this.hp = 5;
     this.scoreValue = 150;
     this.dead = false;
     this.dying = false;
@@ -379,7 +379,7 @@ class EnemySpiderCrab {
 class EnemyAnglerfish {
   constructor(canvas) {
     this.canvas = canvas;
-    this.hp = 5;
+    this.hp = 3;
     this.scoreValue = 200;
     this.dead = false;
     this.dying = false;
@@ -398,8 +398,8 @@ class EnemyAnglerfish {
     this.on = true;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.120); }
-  get h() { return Math.round(this.canvas.height * 0.120); }
+  get w() { return Math.round(this.canvas.height * 0.144); }
+  get h() { return Math.round(this.canvas.height * 0.144); }
 
   onHit() { this.hitFlash = 4; }
 
