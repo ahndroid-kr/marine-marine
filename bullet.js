@@ -15,9 +15,10 @@ class Bullet {
     this.fromBoss = fromBoss;
     this.large = large;
     this.dead = false;
-    this.customImg = opts.img || null;
-    this.fixedW    = opts.w  || null;
-    this.fixedH    = opts.h  || null;
+    this.customImg  = opts.img       || null;
+    this.fixedW     = opts.w         || null;
+    this.fixedH     = opts.h         || null;
+    this.glowStyle  = opts.glowStyle || null;
   }
 
   // Dynamic sizing relative to canvas height
@@ -61,6 +62,20 @@ class Bullet {
       grad.addColorStop(1, '#9B59B6');
       ctx.shadowColor = '#C77DFF';
       ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+    } else if (this.glowStyle === 'anglerfish') {
+      const r    = Math.max(6, Math.round(canvas.height * 0.013));
+      const col  = '#AAF0FF';
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+      grad.addColorStop(0,   '#FFFFFF');
+      grad.addColorStop(0.5, col);
+      grad.addColorStop(1,   'rgba(170,240,255,0.1)');
+      ctx.shadowColor = col;
+      ctx.shadowBlur  = 12;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fillStyle = grad;

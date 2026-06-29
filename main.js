@@ -483,7 +483,9 @@ function update() {
     if (shots) {
       const isBoss = e instanceof BossPuffer || e instanceof BossShark || e instanceof BossWitch || e instanceof MidbossSunfish;
       for (const s of shots) {
-        const opts = s.img ? { img: s.img, w: s.bw, h: s.bh } : {};
+        const opts = {};
+        if (s.img)       { opts.img = s.img; opts.w = s.bw; opts.h = s.bh; }
+        if (s.glowStyle) opts.glowStyle = s.glowStyle;
         bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false, isBoss, false, opts));
       }
     }

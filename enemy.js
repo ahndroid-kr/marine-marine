@@ -25,7 +25,6 @@ const enemyStage3Imgs = {};
   enemyStage3Imgs[t] = _loadEnemyImg(`assets/images/enemy_${t}.png`);
 });
 
-const bulletAnglerfishImg  = _loadEnemyImg('assets/images/bullet_anglerfish.png');
 const bulletBlacksmokerImg = _loadEnemyImg('assets/images/bullet_blacksmoker.png');
 
 // Size ratios relative to canvas.height
@@ -436,8 +435,7 @@ class EnemyAnglerfish {
         const dx   = player.x - this.x;
         const dy   = player.y - this.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const bSz  = Math.round(this.canvas.height * 0.044);
-        return [{ x: this.x - this.w / 2, y: this.y, vx: spd * dx / dist, vy: spd * dy / dist, img: bulletAnglerfishImg, bw: bSz, bh: bSz }];
+        return [{ x: this.x - this.w / 2, y: this.y, vx: spd * dx / dist, vy: spd * dy / dist, glowStyle: 'anglerfish' }];
       }
     }
     return null;

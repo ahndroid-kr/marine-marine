@@ -84,7 +84,7 @@ const stage3 = {
   },
 
   _spawnKrillGroup(canvas, enemies) {
-    const count = 5 + Math.floor(Math.random() * 2);
+    const count = 3 + Math.floor(Math.random() * 2);
     const uiH   = Math.round(canvas.height * 0.085);
     const sbH   = Math.round(canvas.height * 0.035);
     const baseY = uiH + Math.random() * (canvas.height - uiH - sbH - 60);
@@ -97,7 +97,7 @@ const stage3 = {
 
   // ── wave1: 거미게 + 블랙스모커 (900f) ────────────────────────────────────
   _wave1(canvas, enemies) {
-    if (this.spawnTimer >= 200) {
+    if (this.spawnTimer >= 280) {
       this.spawnTimer = 0;
       enemies.push(Math.random() < 0.5 ? new EnemySpiderCrab(canvas) : new EnemyBlackSmoker(canvas));
     }
@@ -106,7 +106,7 @@ const stage3 = {
 
   // ── wave2: 초롱아귀 등장 (720f) ──────────────────────────────────────────
   _wave2(canvas, enemies) {
-    if (this.spawnTimer >= 180) {
+    if (this.spawnTimer >= 252) {
       this.spawnTimer = 0;
       enemies.push(new EnemyAnglerfish(canvas));
     }
@@ -115,7 +115,7 @@ const stage3 = {
 
   // ── wave3: 거미게 + 초롱아귀 혼합 (900f) ─────────────────────────────────
   _wave3(canvas, enemies) {
-    if (this.spawnTimer >= 200) {
+    if (this.spawnTimer >= 280) {
       this.spawnTimer = 0;
       enemies.push(Math.random() < 0.5 ? new EnemySpiderCrab(canvas) : new EnemyAnglerfish(canvas));
     }
@@ -124,7 +124,7 @@ const stage3 = {
 
   // ── wave4: 크릴새우떼 돌진 (480f) ────────────────────────────────────────
   _wave4(canvas, enemies) {
-    if (this.spawnTimer >= 240) {
+    if (this.spawnTimer >= 336) {
       this.spawnTimer = 0;
       this._spawnKrillGroup(canvas, enemies);
     }
@@ -133,7 +133,7 @@ const stage3 = {
 
   // ── wave5: 전체 혼합 (900f) ───────────────────────────────────────────────
   _wave5(canvas, enemies) {
-    if (this.spawnTimer >= 180) {
+    if (this.spawnTimer >= 252) {
       this.spawnTimer = 0;
       const r = Math.random();
       if      (r < 0.30) enemies.push(new EnemySpiderCrab(canvas));
@@ -164,7 +164,7 @@ const stage3 = {
 
   // ── wave6: 초롱아귀 + 크릴새우 단기 (540f) ───────────────────────────────
   _wave6(canvas, enemies) {
-    if (this.spawnTimer >= 200) {
+    if (this.spawnTimer >= 280) {
       this.spawnTimer = 0;
       if (Math.random() < 0.5) enemies.push(new EnemyAnglerfish(canvas));
       else                     this._spawnKrillGroup(canvas, enemies);
