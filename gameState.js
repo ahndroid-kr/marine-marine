@@ -3,6 +3,7 @@ const QA_MODE = true;
 const GS = {
   score: 0,
   lives: 3,
+  stageNum: 1,
   phase: 'title', // 'title' | 'playing' | 'stageclear' | 'gameover'
   scrollX: 0,
   scrollSpeed: 1.5,

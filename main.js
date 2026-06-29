@@ -294,6 +294,7 @@ function startStage(num) {
   GS.score      = 0;
   GS.lives      = QA_MODE ? 99 : 3;
   GS.phase      = 'playing';
+  GS.stageNum   = num;
   GS.scrollX    = 0;
   GS.powerLevel = 0;
   GS.shield     = 0;
@@ -340,6 +341,7 @@ function _prepNextStage() {
     player.x = GAME_W * 0.15;  player.targetX = player.x;
     player.y = GAME_H / 2;     player.targetY = player.y;
   }
+  GS.stageNum  = idx + 2;
   currentStage = def.stageObj;
   currentStage.init();
   bgImg.src = def.bg;

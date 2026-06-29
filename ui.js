@@ -133,13 +133,13 @@ function drawUI(ctx, canvas) {
   ctx.fillText(String(GS.score).padStart(6, '0'), canvas.width / 2, midY);
   ctx.shadowBlur  = 0;
 
-  // ── STAGE 1 (left) ───────────────────────────────────────────────────────
+  // ── STAGE N (left) ───────────────────────────────────────────────────────
   ctx.font        = `${FSZ}px 'Press Start 2P', monospace`;
   ctx.fillStyle   = '#00e5ff';
   ctx.textAlign   = 'left';
   ctx.shadowColor = '#00e5ff';
   ctx.shadowBlur  = 10;
-  ctx.fillText('STAGE 1', PAD, midY);
+  ctx.fillText('STAGE ' + (GS.stageNum || 1), PAD, midY);
   ctx.shadowBlur  = 0;
 
   // ── QA MODE badge ────────────────────────────────────────────────────────
