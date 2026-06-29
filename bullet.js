@@ -69,13 +69,20 @@ class Bullet {
       ctx.shadowBlur = 0;
     } else if (this.glowStyle === 'anglerfish') {
       const r    = Math.max(6, Math.round(canvas.height * 0.013));
-      const col  = '#FFE135';
+      // 외곽 halo — 넓게 번지는 빛
+      ctx.shadowColor = '#FFD700';
+      ctx.shadowBlur  = 32;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.6, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(255,210,0,0.18)';
+      ctx.fill();
+      // 중심 코어
       const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
       grad.addColorStop(0,   '#FFFFFF');
-      grad.addColorStop(0.5, col);
-      grad.addColorStop(1,   'rgba(255,210,0,0.1)');
-      ctx.shadowColor = '#FFD700';
-      ctx.shadowBlur  = 14;
+      grad.addColorStop(0.4, '#FFE135');
+      grad.addColorStop(1,   'rgba(255,180,0,0.0)');
+      ctx.shadowColor = '#FFE135';
+      ctx.shadowBlur  = 20;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fillStyle = grad;
