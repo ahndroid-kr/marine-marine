@@ -84,12 +84,17 @@ const stage3 = {
   },
 
   _spawnKrillGroup(canvas, enemies) {
-    const count = 5 + Math.floor(Math.random() * 2);
-    const uiH   = Math.round(canvas.height * 0.085);
-    const sbH   = Math.round(canvas.height * 0.035);
-    const baseY = uiH + Math.random() * (canvas.height - uiH - sbH - 60);
+    const count   = 5 + Math.floor(Math.random() * 2);
+    const uiH     = Math.round(canvas.height * 0.085);
+    const sbH     = Math.round(canvas.height * 0.035);
+    const lift    = Math.round(canvas.height * 0.080);
+    const floorY  = canvas.height - sbH - lift - Math.round(canvas.height * 0.120);
+    const krillH  = Math.round(canvas.height * 0.044);
+    const maxCY   = floorY - krillH / 2;
+    const baseY   = uiH + krillH / 2 + Math.random() * Math.max(0, maxCY - krillH / 2 - uiH);
     for (let i = 0; i < count; i++) {
-      const k = new EnemyKrill(canvas, baseY + (Math.random() - 0.5) * canvas.height * 0.25);
+      const rawY = baseY + (Math.random() - 0.5) * canvas.height * 0.25;
+      const k = new EnemyKrill(canvas, Math.max(uiH + krillH / 2, Math.min(maxCY, rawY)));
       k.x += i * 22;
       enemies.push(k);
     }

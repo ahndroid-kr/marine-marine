@@ -384,9 +384,12 @@ class EnemyAnglerfish {
     this.dead = false;
     this.dying = false;
     this._giantDmgTimer = 0;
-    const uiH = Math.round(canvas.height * 0.085);
+    const uiH    = Math.round(canvas.height * 0.085);
+    const sbH    = Math.round(canvas.height * 0.035);
+    const lift   = Math.round(canvas.height * 0.080);
+    const floorY = canvas.height - sbH - lift - Math.round(canvas.height * 0.120);
     this.x = canvas.width + this.w;
-    this.y = uiH + this.h / 2 + Math.random() * (canvas.height - uiH - this.h - 40);
+    this.y = uiH + this.h / 2 + Math.random() * Math.max(0, floorY - this.h - uiH);
     this._baseY   = this.y;
     this.sinTimer = Math.random() * Math.PI * 2;
     const s = canvas.height / 600;
@@ -404,15 +407,17 @@ class EnemyAnglerfish {
   onHit() { this.hitFlash = 4; }
 
   update() {
-    const s   = this.canvas.height / 600;
-    const sbH = Math.round(this.canvas.height * 0.035);
-    const uiH = Math.round(this.canvas.height * 0.085);
+    const s      = this.canvas.height / 600;
+    const sbH    = Math.round(this.canvas.height * 0.035);
+    const uiH    = Math.round(this.canvas.height * 0.085);
+    const lift   = Math.round(this.canvas.height * 0.080);
+    const floorY = this.canvas.height - sbH - lift - Math.round(this.canvas.height * 0.120);
 
     this.x += this.vx;
     this.sinTimer += 0.04;
     const sinAmp = Math.round(this.canvas.height * 0.06);
     this.y = Math.max(uiH + this.h / 2,
-      Math.min(this.canvas.height - sbH - this.h / 2, this._baseY + Math.sin(this.sinTimer) * sinAmp));
+      Math.min(floorY - this.h / 2, this._baseY + Math.sin(this.sinTimer) * sinAmp));
     if (this.x < -(this.w + 20)) { this.dead = true; return null; }
     if (this.hitFlash > 0) this.hitFlash--;
 
@@ -536,12 +541,15 @@ class EnemyKrill {
     this.dead = false;
     this.dying = false;
     this._giantDmgTimer = 0;
-    const s   = canvas.height / 600;
-    const uiH = Math.round(canvas.height * 0.085);
+    const s      = canvas.height / 600;
+    const uiH    = Math.round(canvas.height * 0.085);
+    const sbH    = Math.round(canvas.height * 0.035);
+    const lift   = Math.round(canvas.height * 0.080);
+    const floorY = canvas.height - sbH - lift - Math.round(canvas.height * 0.120);
     this.x = canvas.width + this.w + Math.random() * 40;
     this.y = yPos !== undefined
-      ? yPos
-      : uiH + this.h / 2 + Math.random() * (canvas.height - uiH - this.h - 40);
+      ? Math.min(yPos, floorY - this.h / 2)
+      : uiH + this.h / 2 + Math.random() * Math.max(0, floorY - this.h - uiH);
     this.vx = -(4.0 + Math.random() * 1.5) * s;
     this.hitFlash = 0;
   }
