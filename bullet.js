@@ -69,13 +69,13 @@ class Bullet {
       ctx.shadowBlur = 0;
     } else if (this.glowStyle === 'anglerfish') {
       const r    = Math.max(6, Math.round(canvas.height * 0.013));
-      const col  = '#AAF0FF';
+      const col  = '#FFE135';
       const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
       grad.addColorStop(0,   '#FFFFFF');
       grad.addColorStop(0.5, col);
-      grad.addColorStop(1,   'rgba(170,240,255,0.1)');
-      ctx.shadowColor = col;
-      ctx.shadowBlur  = 12;
+      grad.addColorStop(1,   'rgba(255,210,0,0.1)');
+      ctx.shadowColor = '#FFD700';
+      ctx.shadowBlur  = 14;
       ctx.beginPath();
       ctx.arc(0, 0, r, 0, Math.PI * 2);
       ctx.fillStyle = grad;
