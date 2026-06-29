@@ -35,17 +35,6 @@ function drawUI(ctx, canvas) {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, canvas.width, BAR_H);
 
-  // Bottom border glow
-  ctx.strokeStyle = 'rgba(0, 229, 255, 0.60)';
-  ctx.lineWidth   = 1.5;
-  ctx.shadowColor = '#00e5ff';
-  ctx.shadowBlur  = 8;
-  ctx.beginPath();
-  ctx.moveTo(0, BAR_H);
-  ctx.lineTo(canvas.width, BAR_H);
-  ctx.stroke();
-  ctx.shadowBlur  = 0;
-
   ctx.textBaseline = 'middle';
 
   // ── Pause button (far right) ─────────────────────────────────────────────
