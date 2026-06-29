@@ -21,7 +21,7 @@ const enemyStage2Imgs = {};
 });
 
 const enemyStage3Imgs = {};
-['spidercrab', 'anglerfish_on', 'anglerfish_off', 'smoker', 'deepsquid'].forEach(t => {
+['spidercrab', 'anglerfish_on', 'anglerfish_off', 'smoker', 'krill'].forEach(t => {
   enemyStage3Imgs[t] = _loadEnemyImg(`assets/images/enemy_${t}.png`);
 });
 
@@ -562,7 +562,7 @@ class EnemyKrill {
     ctx.save();
     ctx.translate(this.x, this.y);
     if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
-    const img = enemyStage3Imgs.deepsquid;
+    const img = enemyStage3Imgs.krill;
     if (img && img.complete && img.naturalWidth > 0) {
       ctx.drawImage(img, -this.w / 2, -this.h / 2, this.w, this.h);
     }
