@@ -773,7 +773,6 @@ canvas.addEventListener('touchstart', e => {
   if (GS.phase === 'gameover') { handleClearOrGameover(); return; }
   if (GS.phase === 'stageclear' && currentStage === LAST_STAGE) { handleClearOrGameover(); return; }
   if (GS.phase === 'stageclear') return; // mid-transition, ignore taps
-  player.setTarget(px + TOUCH_X_OFFSET, py - TOUCH_Y_OFFSET);
 }, { passive: false });
 
 canvas.addEventListener('touchmove', e => {
@@ -802,7 +801,6 @@ canvas.addEventListener('mousedown', e => {
   if (GS.phase === 'gameover') { handleClearOrGameover(); return; }
   if (GS.phase === 'stageclear' && currentStage === LAST_STAGE) { handleClearOrGameover(); return; }
   if (GS.phase === 'stageclear') return; // mid-transition, ignore taps
-  player.setTarget(px, py);
 });
 canvas.addEventListener('mousemove', e => {
   if (mouseDown && GS.phase === 'playing' && !paused && player) {
