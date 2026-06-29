@@ -334,7 +334,8 @@ class EnemySpiderCrab {
     const lift   = Math.round(canvas.height * 0.080);
     this.x = canvas.width + this.w;
     this.y = canvas.height - sbH - this.h / 2 - lift;
-    this.vx = -(0.6 + Math.random() * 0.4) * s;
+    this._baseY    = this.y;
+    this.vx = -(1.2 + Math.random() * 0.6) * s;
     this.hitFlash  = 0;
     this.fireTimer = Math.floor(Math.random() * 120);
   }
@@ -347,6 +348,7 @@ class EnemySpiderCrab {
   update() {
     const s = this.canvas.height / 600;
     this.x += this.vx;
+    this.y = this._baseY;  // y 고정
     if (this.x < -(this.w + 20)) { this.dead = true; return null; }
     if (this.hitFlash > 0) this.hitFlash--;
 
@@ -386,6 +388,8 @@ class EnemyAnglerfish {
     const uiH = Math.round(canvas.height * 0.085);
     this.x = canvas.width + this.w;
     this.y = uiH + this.h / 2 + Math.random() * (canvas.height - uiH - this.h - 40);
+    this._baseY   = this.y;
+    this.sinTimer = Math.random() * Math.PI * 2;
     const s = canvas.height / 600;
     this.vx = -(0.8 + Math.random() * 0.5) * s;
     this.hitFlash  = 0;
@@ -406,7 +410,10 @@ class EnemyAnglerfish {
     const uiH = Math.round(this.canvas.height * 0.085);
 
     this.x += this.vx;
-    this.y = Math.max(uiH + this.h / 2, Math.min(this.canvas.height - sbH - this.h / 2, this.y));
+    this.sinTimer += 0.04;
+    const sinAmp = Math.round(this.canvas.height * 0.06);
+    this.y = Math.max(uiH + this.h / 2,
+      Math.min(this.canvas.height - sbH - this.h / 2, this._baseY + Math.sin(this.sinTimer) * sinAmp));
     if (this.x < -(this.w + 20)) { this.dead = true; return null; }
     if (this.hitFlash > 0) this.hitFlash--;
 
