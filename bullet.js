@@ -47,7 +47,9 @@ class Bullet {
     ctx.translate(this.x, this.y);
 
     if (this.customImg) {
-      ctx.drawImage(this.customImg, -this.w / 2, -this.h / 2, this.w, this.h);
+      if (this.customImg.complete && this.customImg.naturalWidth > 0) {
+        ctx.drawImage(this.customImg, -this.w / 2, -this.h / 2, this.w, this.h);
+      }
     } else if (this.fromPlayer) {
       const img = this.large ? bulletBubbleLargeImg : bulletBubbleImg;
       ctx.drawImage(img, -this.w / 2, -this.h / 2, this.w, this.h);
