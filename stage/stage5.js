@@ -21,6 +21,8 @@ const stage5 = {
 
   updateBackground() {},
 
+  draw(ctx, canvas) {},   // WARNING 오버레이 없음, main.js 호환용
+
   drawBackground(ctx, canvas) {
     if (_s5BgImg.complete && _s5BgImg.naturalWidth > 0) {
       const iw     = Math.round(_s5BgImg.naturalWidth * (canvas.height / _s5BgImg.naturalHeight));
