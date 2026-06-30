@@ -310,14 +310,16 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
 
   // ── Title logo image (floating) ───────────────────────────────────────────
   if (titleLogoImg.complete && titleLogoImg.naturalWidth > 0) {
-    const logoW     = Math.round(240 * s);
-    const logoH     = Math.round(160 * s);
-    const logoBaseY = Math.round(canvas.height * 0.08);
+    const logoW     = Math.round(360 * s);
+    const logoH     = Math.round(240 * s);
+    const logoBaseY = Math.round(canvas.height * 0.12);
     const floatY    = Math.sin(Date.now() / 1000 * (Math.PI * 2) / 2.5) * 6 * s;
     ctx.drawImage(titleLogoImg, cx - logoW / 2, logoBaseY + floatY, logoW, logoH);
   }
 
   // ── Buttons ──────────────────────────────────────────────────────────────
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
   const isQA    = typeof QA_MODE !== 'undefined' && QA_MODE;
   const subSz   = Math.round(canvas.height * 0.014);
   const btnW    = Math.round(Math.min(canvas.width * 0.24, canvas.height * 0.22));
