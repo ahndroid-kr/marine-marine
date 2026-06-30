@@ -263,6 +263,7 @@ const STAGE_DEFS = [
   { label: 'STAGE 1', stageObj: stage1, bg: 'assets/images/bg_stage1.png' },
   { label: 'STAGE 2', stageObj: stage2, bg: 'assets/images/bg_stage2.png' },
   { label: 'STAGE 3', stageObj: stage3, bg: 'assets/images/bg_stage3.png' },
+  { label: 'STAGE 4', stageObj: stage4, bg: 'assets/images/bg_stage4.png' },
 ];
 const STAGE_LABELS = STAGE_DEFS.map(d => d.label);
 

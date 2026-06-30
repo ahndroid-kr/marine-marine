@@ -1,4 +1,4 @@
-const CACHE = 'marine-marine-v15';
+const CACHE = 'marine-marine-v16';
 
 const PRECACHE = [
   './',
@@ -17,6 +17,7 @@ const PRECACHE = [
   './stage/stage1.js',
   './stage/stage2.js',
   './stage/stage3.js',
+  './stage/stage4.js',
   './main.js',
   './manifest.json',
   './assets/images/bg_stage1.png',
@@ -77,6 +78,20 @@ const PRECACHE = [
   './assets/images/effect_witch.png',
   './assets/images/effect_thunder.png',
   './assets/images/title_logo.png',
+  './assets/images/bg_stage4.png',
+  './assets/images/enemy_hermitcrab.png',
+  './assets/images/enemy_starfish.png',
+  './assets/images/enemy_jellyfish.png',
+  './assets/images/bullet_crab.png',
+  './assets/images/bullet_pearl.png',
+  './assets/images/midboss_clam.png',
+  './assets/images/boss_monkey_1.png',
+  './assets/images/boss_monkey_2.png',
+  './assets/images/boss_monkey_3.png',
+  './assets/images/boss_monkey_dead.png',
+  './assets/images/bullet_banana.png',
+  './assets/images/bullet_coconut_1.png',
+  './assets/images/bullet_coconut_2.png',
 ];
 
 self.addEventListener('install', e => {
