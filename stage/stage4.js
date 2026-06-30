@@ -460,7 +460,7 @@ class BossMonkey {
     this.y  = Math.max(uiH + margin, Math.min(this.canvas.height - margin, this.y));
 
     // 페이즈별 발사 패턴
-    const fireRate = ap === 1 ? 120 : ap === 2 ? 90 : 40;
+    const fireRate = ap === 1 ? 120 : ap === 2 ? 90 : 90;
     this.fireTimer++;
     if (this.fireTimer >= fireRate) {
       this.fireTimer = 0;
