@@ -1,4 +1,4 @@
-const CACHE = 'marine-marine-v30';
+const CACHE = 'marine-marine-v31';
 
 const PRECACHE = [
   './',
@@ -18,6 +18,7 @@ const PRECACHE = [
   './stage/stage2.js',
   './stage/stage3.js',
   './stage/stage4.js',
+  './stage/stage5.js',
   './main.js',
   './manifest.json',
   './assets/images/bg_stage1.png',
@@ -79,6 +80,7 @@ const PRECACHE = [
   './assets/images/effect_thunder.png',
   './assets/images/title_logo.png',
   './assets/images/bg_stage4.png',
+  './assets/images/bg_stage5.png',
   './assets/images/enemy_hermitcrab.png',
   './assets/images/enemy_starfish.png',
   './assets/images/enemy_jellyfish.png',
