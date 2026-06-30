@@ -100,50 +100,52 @@ const stage3 = {
     }
   },
 
-  // ── wave1: 거미게 + 블랙스모커 (900f) ────────────────────────────────────
+  // ── wave1: 크릴새우 위주 (HP1) + 아귀 소량 (1170f) ──────────────────────
   _wave1(canvas, enemies) {
-    if (this.spawnTimer >= 200) {
+    if (this.spawnTimer >= 150) {
       this.spawnTimer = 0;
-      enemies.push(Math.random() < 0.5 ? new EnemySpiderCrab(canvas) : new EnemyBlackSmoker(canvas));
+      if (Math.random() < 0.70) this._spawnKrillGroup(canvas, enemies);
+      else                      enemies.push(new EnemyAnglerfish(canvas));
     }
     if (this.waveTimer >= 1170) this._next('wave2');
   },
 
-  // ── wave2: 초롱아귀 등장 (936f) ──────────────────────────────────────────
+  // ── wave2: 크릴새우 + 아귀 균형 (936f) ───────────────────────────────────
   _wave2(canvas, enemies) {
-    if (this.spawnTimer >= 180) {
+    if (this.spawnTimer >= 150) {
       this.spawnTimer = 0;
-      enemies.push(new EnemyAnglerfish(canvas));
+      if (Math.random() < 0.50) this._spawnKrillGroup(canvas, enemies);
+      else                      enemies.push(new EnemyAnglerfish(canvas));
     }
     if (this.waveTimer >= 936) this._next('wave3');
   },
 
-  // ── wave3: 거미게 + 초롱아귀 혼합 (1170f) ────────────────────────────────
+  // ── wave3: 아귀 + 거미게 첫 등장 (1170f) ─────────────────────────────────
   _wave3(canvas, enemies) {
-    if (this.spawnTimer >= 200) {
+    if (this.spawnTimer >= 150) {
       this.spawnTimer = 0;
-      enemies.push(Math.random() < 0.5 ? new EnemySpiderCrab(canvas) : new EnemyAnglerfish(canvas));
+      if (Math.random() < 0.60) enemies.push(new EnemyAnglerfish(canvas));
+      else                      enemies.push(new EnemySpiderCrab(canvas));
     }
     if (this.waveTimer >= 1170) this._next('wave4');
   },
 
   // ── wave4: 크릴새우떼 돌진 (624f) ────────────────────────────────────────
   _wave4(canvas, enemies) {
-    if (this.spawnTimer >= 240) {
+    if (this.spawnTimer >= 180) {
       this.spawnTimer = 0;
       this._spawnKrillGroup(canvas, enemies);
     }
     if (this.waveTimer >= 624) this._next('wave5');
   },
 
-  // ── wave5: 전체 혼합 (1170f) ──────────────────────────────────────────────
+  // ── wave5: 전체 혼합, 거미게 강세 (1170f) ────────────────────────────────
   _wave5(canvas, enemies) {
-    if (this.spawnTimer >= 180) {
+    if (this.spawnTimer >= 130) {
       this.spawnTimer = 0;
       const r = Math.random();
-      if      (r < 0.30) enemies.push(new EnemySpiderCrab(canvas));
-      else if (r < 0.55) enemies.push(new EnemyAnglerfish(canvas));
-      else if (r < 0.70) enemies.push(new EnemyBlackSmoker(canvas));
+      if      (r < 0.40) enemies.push(new EnemySpiderCrab(canvas));
+      else if (r < 0.75) enemies.push(new EnemyAnglerfish(canvas));
       else               this._spawnKrillGroup(canvas, enemies);
     }
     if (this.waveTimer >= 1170) this._next('midboss_warn');
@@ -167,12 +169,12 @@ const stage3 = {
     // 일반 몬스터 스폰 없음 — midbossRef 사망 시 update()에서 wave6 전환
   },
 
-  // ── wave6: 초롱아귀 + 크릴새우 단기 (540f) ───────────────────────────────
+  // ── wave6: 아귀 + 크릴새우 (보스 전 정리, 702f) ─────────────────────────
   _wave6(canvas, enemies) {
-    if (this.spawnTimer >= 200) {
+    if (this.spawnTimer >= 150) {
       this.spawnTimer = 0;
-      if (Math.random() < 0.5) enemies.push(new EnemyAnglerfish(canvas));
-      else                     this._spawnKrillGroup(canvas, enemies);
+      if (Math.random() < 0.50) enemies.push(new EnemyAnglerfish(canvas));
+      else                      this._spawnKrillGroup(canvas, enemies);
     }
     if (this.waveTimer >= 702) this._next('boss_warn');
   },
