@@ -1,6 +1,9 @@
 const uiHeartImg = new Image();
 uiHeartImg.src = 'assets/images/ui_heart.png';
 
+const titleLogoImg = new Image();
+titleLogoImg.src = 'assets/images/title_logo.png';
+
 // ─── Rounded rect path helper ─────────────────────────────────────────────────
 function roundRect(ctx, x, y, w, h, r) {
   r = Math.min(r, w / 2, h / 2);
@@ -303,19 +306,16 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   const cx = canvas.width  / 2;
-  const cy = canvas.height / 2;
+  const s  = canvas.height / 600;
 
-  // ── Title text ───────────────────────────────────────────────────────────
-  const titleSz = Math.round(Math.min(canvas.width * 0.09, canvas.height * 0.065));
-  ctx.textAlign    = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.font         = `${titleSz}px 'Press Start 2P', monospace`;
-  ctx.fillStyle    = '#f5f0e0';
-  ctx.shadowColor  = 'rgba(245, 240, 224, 0.30)';
-  ctx.shadowBlur   = 12;
-  ctx.fillText('MARINE', cx, cy - titleSz * 1.60);
-  ctx.fillText('MARINE', cx, cy - titleSz * 0.50);
-  ctx.shadowBlur   = 0;
+  // ── Title logo image (floating) ───────────────────────────────────────────
+  if (titleLogoImg.complete && titleLogoImg.naturalWidth > 0) {
+    const logoW     = Math.round(240 * s);
+    const logoH     = Math.round(160 * s);
+    const logoBaseY = Math.round(canvas.height * 0.08);
+    const floatY    = Math.sin(Date.now() / 1000 * (Math.PI * 2) / 2.5) * 6 * s;
+    ctx.drawImage(titleLogoImg, cx - logoW / 2, logoBaseY + floatY, logoW, logoH);
+  }
 
   // ── Buttons ──────────────────────────────────────────────────────────────
   const isQA    = typeof QA_MODE !== 'undefined' && QA_MODE;
@@ -326,7 +326,7 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
   const gap     = Math.round(canvas.width  * 0.04);
   const totalW  = stageLabels.length * btnW + (stageLabels.length - 1) * gap;
   const startX  = cx - totalW / 2;
-  const btnY    = cy + titleSz * 1.60;
+  const btnY    = Math.round(canvas.height * 0.60);
 
   if (isQA) {
     ctx.font      = `${subSz}px 'Press Start 2P', monospace`;
