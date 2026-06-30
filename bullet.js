@@ -67,6 +67,24 @@ class Bullet {
       ctx.fillStyle = grad;
       ctx.fill();
       ctx.shadowBlur = 0;
+    } else if (this.glowStyle === 'jellyfish') {
+      const r = Math.max(5, Math.round(canvas.height * 0.011));
+      ctx.shadowColor = '#00E5FF';
+      ctx.shadowBlur  = 18;
+      ctx.beginPath();
+      ctx.arc(0, 0, r * 1.8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(0,229,255,0.15)';
+      ctx.fill();
+      const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, r);
+      grad.addColorStop(0,   '#FFFFFF');
+      grad.addColorStop(0.4, '#00E5FF');
+      grad.addColorStop(1,   'rgba(0,180,220,0.0)');
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.arc(0, 0, r, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.shadowBlur = 0;
     } else if (this.glowStyle === 'anglerfish') {
       const r    = Math.max(6, Math.round(canvas.height * 0.013));
       // 외곽 halo — 넓게 번지는 빛

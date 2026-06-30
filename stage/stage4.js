@@ -19,7 +19,6 @@ const enemyStage4Imgs = {};
 });
 
 const bulletCrabImg    = _s4LoadImg('assets/images/bullet_crab.png');
-const bulletBubbleS4   = _s4LoadImg('assets/images/bullet_bubble.png');
 
 // ─── EnemyHermitCrab: 하단 고정, 플레이어 조준 발사 ──────────────────────────
 class EnemyHermitCrab {
@@ -170,11 +169,10 @@ class EnemyJellyfish {
       this.fireTimer = 0;
       this._nextFire = 90 + Math.floor(Math.random() * 90);
       const spd  = 3.5 * s;
-      const bSz  = Math.round(this.canvas.height * 0.040);
       const dx   = player.x - this.x;
       const dy   = player.y - this.y;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      return [{ x: this.x, y: this.y, vx: spd * dx / dist, vy: spd * dy / dist, img: bulletBubbleS4, bw: bSz, bh: bSz }];
+      return [{ x: this.x, y: this.y, vx: spd * dx / dist, vy: spd * dy / dist, glowStyle: 'jellyfish' }];
     }
     return null;
   }
