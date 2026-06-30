@@ -487,6 +487,7 @@ function update() {
         const opts = {};
         if (s.img)       { opts.img = s.img; opts.w = s.bw; opts.h = s.bh; }
         if (s.glowStyle) opts.glowStyle = s.glowStyle;
+        if (s.spin)      opts.spin = s.spin;
         bullets.push(new Bullet(s.x, s.y, s.vx, s.vy, false, isBoss, false, opts));
       }
     }

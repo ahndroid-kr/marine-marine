@@ -388,14 +388,13 @@ class BossMonkey {
   }
 
   _bananaSingle(s) {
-    const bW  = Math.round(this.canvas.height * 0.089);
-    const bH  = Math.round(this.canvas.height * 0.078);
+    const bSz = Math.round(this.canvas.height * 0.115);  // 62/540
     const spd = 5 * s;
     const dx = player.x - this.x, dy = player.y - this.y;
     const d  = Math.sqrt(dx * dx + dy * dy) || 1;
     return [{ x: this.x - this.w * 0.4, y: this.y,
               vx: spd * dx / d, vy: spd * dy / d,
-              img: bulletBananaImg, bw: bW, bh: bH }];
+              img: bulletBananaImg, bw: bSz, bh: bSz, spin: 0.08 }];
   }
 
   _coconutShot(s) {
@@ -416,18 +415,18 @@ class BossMonkey {
     const spread = Math.PI / 10;  // 18° 간격
     const dx = player.x - this.x, dy = player.y - this.y;
     const base = Math.atan2(dy, dx);
-    const bW   = Math.round(this.canvas.height * 0.089);
-    const bH   = Math.round(this.canvas.height * 0.078);
-    const bSz  = Math.round(this.canvas.height * 0.078);
+    const bBanana = Math.round(this.canvas.height * 0.115);  // 62/540
+    const bSz     = Math.round(this.canvas.height * 0.078);
     for (let i = -1; i <= 1; i++) {
-      const a   = base + i * spread;
+      const a        = base + i * spread;
       const isBanana = Math.random() < 0.5;
       shots.push({
         x: this.x - this.w * 0.4, y: this.y,
         vx: spd * Math.cos(a), vy: spd * Math.sin(a),
-        img: isBanana ? bulletBananaImg : (Math.random() < 0.5 ? bulletCoconut1 : bulletCoconut2),
-        bw: isBanana ? bW : bSz,
-        bh: isBanana ? bH : bSz,
+        img:  isBanana ? bulletBananaImg : (Math.random() < 0.5 ? bulletCoconut1 : bulletCoconut2),
+        bw:   isBanana ? bBanana : bSz,
+        bh:   isBanana ? bBanana : bSz,
+        spin: isBanana ? 0.08 : 0,
       });
     }
     return shots;

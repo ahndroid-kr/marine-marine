@@ -19,6 +19,8 @@ class Bullet {
     this.fixedW     = opts.w         || null;
     this.fixedH     = opts.h         || null;
     this.glowStyle  = opts.glowStyle || null;
+    this.spin       = opts.spin      || 0;    // rad/frame 회전 속도
+    this.rotation   = 0;
   }
 
   // Dynamic sizing relative to canvas height
@@ -38,6 +40,7 @@ class Bullet {
   update(c) {
     this.x += this.vx;
     this.y += this.vy;
+    if (this.spin) this.rotation += this.spin;
     if (this.x > c.width + 80 || this.x < -80 || this.y < -80 || this.y > c.height + 80) {
       this.dead = true;
     }
@@ -49,6 +52,7 @@ class Bullet {
 
     if (this.customImg) {
       if (this.customImg.complete && this.customImg.naturalWidth > 0) {
+        if (this.rotation) ctx.rotate(this.rotation);
         ctx.drawImage(this.customImg, -this.w / 2, -this.h / 2, this.w, this.h);
       }
     } else if (this.fromPlayer) {
