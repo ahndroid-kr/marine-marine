@@ -233,13 +233,13 @@ class MidbossClam {
     this.dead            = false;
     this.dying           = false;
     this.scoreValue      = 600;
-    this.dropLife        = false;
     this.hitFlash        = 0;
     this.hitEffects      = [];
     this.fireTimer       = 0;
     this.deadTimer       = 0;
     this.invincibleTimer = 0;
     this._giantDmgTimer  = 0;
+    this._pendingDrops   = [];   // 사망 연출 후 지연 드롭
     this.x = canvas.width + this.w;
     this.y = canvas.height / 2;
     this._restX  = Math.round(canvas.width * 0.78);
@@ -259,13 +259,35 @@ class MidbossClam {
     this.hitEffects.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, timer: 12 });
   }
 
-  onDeath() { this.dying = true; this.deadTimer = 0; }
+  // 드롭은 즉시 생성하지 않고 _pendingDrops에 저장 → 연출 후 main.js에서 방출
+  getDrops() {
+    const starTypes = ['red', 'blue', 'yellow'];
+    const count = 1 + Math.floor(Math.random() * 2);
+    this._pendingDrops = [
+      { x: this.x, y: this.y, type: 'life', sizeScale: 1.5 },
+    ];
+    for (let i = 0; i < count; i++) {
+      this._pendingDrops.push({
+        x: this.x + (Math.random() - 0.5) * 80,
+        y: this.y + (Math.random() - 0.5) * 50,
+        type: starTypes[Math.floor(Math.random() * starTypes.length)],
+        sizeScale: 1,
+      });
+    }
+    return [];  // 즉시 드롭 없음
+  }
+
+  onDeath() {
+    this.dying     = true;
+    this.deadTimer = 0;
+    triggerShake(6, 10);  // 강도 6, 10f (~167ms)
+  }
 
   update() {
-    // 사망 연출: 150f 후 dead = true
+    // 사망 연출: 18f 페이드아웃 후 dead = true → main.js 필터에서 지연 드롭 방출
     if (this.dying) {
       this.deadTimer++;
-      if (this.deadTimer > 150) this.dead = true;
+      if (this.deadTimer >= 18) this.dead = true;
       return null;
     }
 
@@ -303,6 +325,25 @@ class MidbossClam {
     const hw = this.w / 2, hh = this.h / 2;
     ctx.save();
     ctx.translate(this.x, this.y);
+
+    if (this.dying) {
+      const t     = Math.min(1, this.deadTimer / 18);
+      const scale = 1 + t * 0.15;          // 1.0 → 1.15
+      const alpha = Math.max(0, 1 - t);    // 1.0 → 0.0
+      ctx.scale(scale, scale);
+      ctx.globalAlpha = alpha;
+      if (midbossClamImg.complete && midbossClamImg.naturalWidth > 0)
+        ctx.drawImage(midbossClamImg, -hw, -hh, this.w, this.h);
+      // 초기 1~2f 흰색 플래시 오버레이
+      if (this.deadTimer <= 2) {
+        ctx.globalAlpha = 0.85;
+        ctx.fillStyle   = '#ffffff';
+        ctx.fillRect(-hw, -hh, this.w, this.h);
+      }
+      ctx.restore();
+      return;
+    }
+
     if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
     if (midbossClamImg.complete && midbossClamImg.naturalWidth > 0)
       ctx.drawImage(midbossClamImg, -hw, -hh, this.w, this.h);
@@ -313,9 +354,8 @@ class MidbossClam {
       ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
       ctx.restore();
     }
-    if (!this.dying)
-      drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
-        { wRatio: 0.175, hRatio: 0.006, color: '#00e5ff' });
+    drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
+      { wRatio: 0.175, hRatio: 0.006, color: '#00e5ff' });
     ctx.restore();
   }
 }

@@ -503,7 +503,13 @@ function update() {
   }
   enemies.push(...newSpawns);
 
-  enemies = enemies.filter(e => !e.dead);
+  enemies = enemies.filter(e => {
+    if (e.dead && e._pendingDrops && e._pendingDrops.length > 0) {
+      for (const d of e._pendingDrops) items.push(new Item(d.x, d.y, d.type, d.sizeScale));
+      e._pendingDrops = [];
+    }
+    return !e.dead;
+  });
 
   for (const item of items) item.update();
   items = items.filter(item => !item.dead);
