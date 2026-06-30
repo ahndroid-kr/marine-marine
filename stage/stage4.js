@@ -21,6 +21,15 @@ const enemyStage4Imgs = {};
 const bulletCrabImg    = _s4LoadImg('assets/images/bullet_crab.png');
 const bulletPearlImg   = _s4LoadImg('assets/images/bullet_pearl.png');
 const midbossClamImg   = _s4LoadImg('assets/images/midboss_clam.png');
+const bulletBananaImg  = _s4LoadImg('assets/images/bullet_banana.png');
+const bulletCoconut1   = _s4LoadImg('assets/images/bullet_coconut_1.png');
+const bulletCoconut2   = _s4LoadImg('assets/images/bullet_coconut_2.png');
+const bossMonkeyImgs   = {
+  1:    _s4LoadImg('assets/images/boss_monkey_1.png'),
+  2:    _s4LoadImg('assets/images/boss_monkey_2.png'),
+  3:    _s4LoadImg('assets/images/boss_monkey_3.png'),
+  dead: _s4LoadImg('assets/images/boss_monkey_dead.png'),
+};
 
 // ─── EnemyHermitCrab: 하단 고정, 플레이어 조준 발사 ──────────────────────────
 class EnemyHermitCrab {
@@ -277,6 +286,179 @@ class MidbossClam {
   }
 }
 
+// ─── BossMonkey: 3페이즈, 바나나/코코넛 투척 ─────────────────────────────────
+class BossMonkey {
+  constructor(canvas) {
+    this.canvas          = canvas;
+    this.maxHp           = 80;
+    this.hp              = 80;
+    this.dead            = false;
+    this.dying           = false;
+    this.scoreValue      = 1500;
+    this.t               = 0;
+    this.hitFlash        = 0;
+    this.deadTimer       = 0;
+    this.hitEffects      = [];
+    this.fireTimer       = 0;
+    this._coconutToggle  = false;  // coconut_1/2 교번용
+    this.invincibleTimer = 0;
+    this._giantDmgTimer  = 0;
+    const s    = canvas.height / 600;
+    this.vx    = -2.5 * s;
+    this.arrived = false;
+    this.x     = canvas.width + this.w;
+    this.y     = canvas.height / 2;
+  }
+
+  // 원본 256×205 → 2× 렌더: 512×410
+  get w() { return Math.round(this.canvas.height * 0.948); }
+  get h() { return Math.round(this.canvas.height * 0.759); }
+
+  get attackPhase() {
+    const r = this.hp / this.maxHp;
+    if (r > 0.66) return 1;
+    if (r > 0.33) return 2;
+    return 3;
+  }
+
+  get currentImg() {
+    if (this.dying) return bossMonkeyImgs.dead;
+    return bossMonkeyImgs[this.attackPhase];
+  }
+
+  onHit() {
+    if (this.invincibleTimer > 0) return;
+    this.hitFlash = 6;
+    const angle = Math.random() * Math.PI * 2;
+    const dist  = (this.w / 2) * (0.5 + Math.random() * 0.4);
+    this.hitEffects.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, timer: 14 });
+  }
+
+  onDeath() { this.dying = true; this.deadTimer = 0; }
+
+  getDrops() {
+    const sp    = this.w * 0.30;
+    const drops = [{ x: this.x, y: this.y, type: 'life', sizeScale: 2 }];
+    const count = 2 + Math.floor(Math.random() * 2);
+    const types = ['red', 'blue', 'yellow'];
+    for (let i = 0; i < count; i++) {
+      const a = (Math.PI * 2 / count) * i - Math.PI / 2;
+      drops.push({
+        x: this.x + Math.cos(a) * sp,
+        y: this.y + Math.sin(a) * sp,
+        type: types[Math.floor(Math.random() * types.length)],
+        sizeScale: 1,
+      });
+    }
+    return drops;
+  }
+
+  _bananaSingle(s) {
+    const bW  = Math.round(this.canvas.height * 0.089);
+    const bH  = Math.round(this.canvas.height * 0.078);
+    const spd = 5 * s;
+    const dx = player.x - this.x, dy = player.y - this.y;
+    const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+    return [{ x: this.x - this.w * 0.4, y: this.y,
+              vx: spd * dx / d, vy: spd * dy / d,
+              img: bulletBananaImg, bw: bW, bh: bH }];
+  }
+
+  _coconutShot(s) {
+    const bSz = Math.round(this.canvas.height * 0.078);
+    const spd = 5.5 * s;
+    const img = this._coconutToggle ? bulletCoconut2 : bulletCoconut1;
+    this._coconutToggle = !this._coconutToggle;
+    const dx = player.x - this.x, dy = player.y - this.y;
+    const d  = Math.sqrt(dx * dx + dy * dy) || 1;
+    return [{ x: this.x - this.w * 0.4, y: this.y,
+              vx: spd * dx / d, vy: spd * dy / d,
+              img, bw: bSz, bh: bSz }];
+  }
+
+  _phase3Barrage(s) {
+    const shots  = [];
+    const spd    = 6 * s;
+    const spread = Math.PI / 10;  // 18° 간격
+    const dx = player.x - this.x, dy = player.y - this.y;
+    const base = Math.atan2(dy, dx);
+    const bW   = Math.round(this.canvas.height * 0.089);
+    const bH   = Math.round(this.canvas.height * 0.078);
+    const bSz  = Math.round(this.canvas.height * 0.078);
+    for (let i = -1; i <= 1; i++) {
+      const a   = base + i * spread;
+      const isBanana = Math.random() < 0.5;
+      shots.push({
+        x: this.x - this.w * 0.4, y: this.y,
+        vx: spd * Math.cos(a), vy: spd * Math.sin(a),
+        img: isBanana ? bulletBananaImg : (Math.random() < 0.5 ? bulletCoconut1 : bulletCoconut2),
+        bw: isBanana ? bW : bSz,
+        bh: isBanana ? bH : bSz,
+      });
+    }
+    return shots;
+  }
+
+  update(player) {
+    if (this.dying) {
+      this.deadTimer++;
+      if (this.deadTimer > 150) this.dead = true;
+      return null;
+    }
+
+    const s   = this.canvas.height / 600;
+    const ap  = this.attackPhase;
+    const uiH = Math.round(this.canvas.height * 0.085);
+    this.t += 0.015;
+    if (this.hitFlash        > 0) this.hitFlash--;
+    if (this.invincibleTimer > 0) this.invincibleTimer--;
+    this.hitEffects = this.hitEffects.filter(e => --e.timer > 0);
+
+    const restX  = this.canvas.width * 0.70;
+    const margin = this.h / 2 + 10;
+    if (!this.arrived) {
+      this.x += this.vx;
+      if (this.x <= restX) { this.x = restX; this.arrived = true; }
+    } else {
+      this.x = Math.max(this.w / 2 + 20, restX + Math.sin(this.t * 0.9) * (this.canvas.width * 0.015));
+    }
+    this.y += Math.sin(this.t * 0.8) * 0.5 * s;
+    this.y  = Math.max(uiH + margin, Math.min(this.canvas.height - margin, this.y));
+
+    // 페이즈별 발사 패턴
+    const fireRate = ap === 1 ? 120 : ap === 2 ? 90 : 40;
+    this.fireTimer++;
+    if (this.fireTimer >= fireRate) {
+      this.fireTimer = 0;
+      if (ap === 1) return this._bananaSingle(s);
+      if (ap === 2) return this._coconutShot(s);
+      return this._phase3Barrage(s);
+    }
+    return null;
+  }
+
+  draw(ctx) {
+    const hw = this.w / 2, hh = this.h / 2;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    const img = this.currentImg;
+    if (img && img.complete && img.naturalWidth > 0)
+      ctx.drawImage(img, -hw, -hh, this.w, this.h);
+    ctx.globalAlpha = 1;
+    for (const e of this.hitEffects) {
+      ctx.save();
+      ctx.globalAlpha = e.timer / 14;
+      ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
+      ctx.restore();
+    }
+    if (!this.dying)
+      drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
+        { color: '#FFD700' });
+    ctx.restore();
+  }
+}
+
 // ─── Stage 4 ──────────────────────────────────────────────────────────────────
 const stage4 = {
   _inited:     false,
@@ -284,6 +466,7 @@ const stage4 = {
   waveTimer:   0,
   spawnTimer:  0,
   midbossRef:  null,
+  bossRef:     null,
   warning:     null,
 
   init() {
@@ -292,6 +475,7 @@ const stage4 = {
     this.waveTimer  = 0;
     this.spawnTimer = 0;
     this.midbossRef = null;
+    this.bossRef    = null;
     this.warning    = null;
   },
 
@@ -370,7 +554,7 @@ const stage4 = {
   // 중간보스: 대왕조개 (사망까지)
   _waveMidboss() {},
 
-  // wave6: 중간보스 처치 후 짧은 정리 구간 (600f / 10s) — 3단계에서 boss_warn으로 교체 예정
+  // wave6: 중간보스 처치 후 짧은 정리 구간 (600f / 10s)
   _wave6(canvas, enemies) {
     if (this.spawnTimer >= 150) {
       this.spawnTimer = 0;
@@ -379,8 +563,24 @@ const stage4 = {
       else if (r < 0.7) enemies.push(new EnemyStarfish(canvas));
       else               enemies.push(new EnemyJellyfish(canvas));
     }
-    if (this.waveTimer >= 600) GS.phase = 'stageclear'; // TODO: → boss_warn
+    if (this.waveTimer >= 600) this._next('boss_warn');
   },
+
+  // 보스 WARNING (150f)
+  _waveBossWarn(canvas, enemies) {
+    if (!this.warning) this.warning = { timer: 0, type: 'boss' };
+    this.warning.timer++;
+    if (this.warning.timer >= 150) {
+      const monkey  = new BossMonkey(canvas);
+      enemies.push(monkey);
+      this.bossRef = monkey;
+      this.warning = null;
+      this._next('boss');
+    }
+  },
+
+  // 보스: 원숭이 (사망까지)
+  _waveBoss() {},
 
   updateBackground() {},  // 파티클 없음, main.js 호환용
 
@@ -401,23 +601,30 @@ const stage4 = {
       this.midbossRef = null;
       if (this.wave === 'midboss') this._next('wave6');
     }
+    if (this.bossRef && this.bossRef.dead) {
+      this.bossRef = null;
+      if (this.wave === 'boss') GS.phase = 'stageclear';
+    }
 
     switch (this.wave) {
-      case 'wave1':        this._wave1(canvas, enemies);        break;
-      case 'wave2':        this._wave2(canvas, enemies);        break;
-      case 'wave3':        this._wave3(canvas, enemies);        break;
-      case 'wave4':        this._wave4(canvas, enemies);        break;
-      case 'wave5':        this._wave5(canvas, enemies);        break;
+      case 'wave1':        this._wave1(canvas, enemies);           break;
+      case 'wave2':        this._wave2(canvas, enemies);           break;
+      case 'wave3':        this._wave3(canvas, enemies);           break;
+      case 'wave4':        this._wave4(canvas, enemies);           break;
+      case 'wave5':        this._wave5(canvas, enemies);           break;
       case 'midboss_warn': this._waveMidbossWarn(canvas, enemies); break;
-      case 'midboss':      this._waveMidboss();                 break;
-      case 'wave6':        this._wave6(canvas, enemies);        break;
+      case 'midboss':      this._waveMidboss();                    break;
+      case 'wave6':        this._wave6(canvas, enemies);           break;
+      case 'boss_warn':    this._waveBossWarn(canvas, enemies);    break;
+      case 'boss':         this._waveBoss();                       break;
     }
     this.waveTimer++;
     this.spawnTimer++;
   },
 
   draw(ctx, canvas) {
-    if (this.wave !== 'midboss_warn' || !this.warning) return;
+    const isWarn = (this.wave === 'midboss_warn' || this.wave === 'boss_warn') && this.warning;
+    if (!isWarn) return;
     const isOn = Math.floor(this.warning.timer / 25) % 2 === 0;
     if (!isOn) return;
 
@@ -425,9 +632,10 @@ const stage4 = {
     ctx.fillStyle = 'rgba(90, 0, 0, 0.42)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    const cx = canvas.width / 2;
-    const cy = canvas.height / 2;
-    const fs = Math.round(Math.min(canvas.width, canvas.height) * 0.062);
+    const cx   = canvas.width / 2;
+    const cy   = canvas.height / 2;
+    const fs   = Math.round(Math.min(canvas.width, canvas.height) * 0.062);
+    const sub  = this.warning.type === 'boss' ? 'BOSS APPROACHING' : 'MID BOSS APPROACHING';
     ctx.textAlign    = 'center';
     ctx.textBaseline = 'middle';
     ctx.font         = `${fs}px 'Press Start 2P', monospace`;
@@ -438,7 +646,7 @@ const stage4 = {
     ctx.font      = `${Math.round(fs * 0.40)}px 'Press Start 2P', monospace`;
     ctx.fillStyle = '#ffaaaa';
     ctx.shadowBlur = 16;
-    ctx.fillText('MID BOSS APPROACHING', cx, cy + Math.round(fs * 1.05));
+    ctx.fillText(sub, cx, cy + Math.round(fs * 1.05));
     ctx.restore();
   },
 };
