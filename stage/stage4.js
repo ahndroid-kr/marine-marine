@@ -237,6 +237,7 @@ class MidbossClam {
     this.hitFlash        = 0;
     this.hitEffects      = [];
     this.fireTimer       = 0;
+    this.deadTimer       = 0;
     this.invincibleTimer = 0;
     this._giantDmgTimer  = 0;
     this.x = canvas.width + this.w;
@@ -258,9 +259,16 @@ class MidbossClam {
     this.hitEffects.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, timer: 12 });
   }
 
-  onDeath() { this.dying = true; }
+  onDeath() { this.dying = true; this.deadTimer = 0; }
 
   update() {
+    // 사망 연출: 150f 후 dead = true
+    if (this.dying) {
+      this.deadTimer++;
+      if (this.deadTimer > 150) this.dead = true;
+      return null;
+    }
+
     const s = this.canvas.height / 600;
     if (this.hitFlash        > 0) this.hitFlash--;
     if (this.invincibleTimer > 0) this.invincibleTimer--;
@@ -273,9 +281,9 @@ class MidbossClam {
       return null;
     }
 
-    // 발사 패턴: phase1 120f(2s) / phase2(HP 50% 이하) 30f 연사
+    // 발사 패턴: phase1 120f(2s) / phase2(HP 50% 이하) 55f 연사 (~0.9s)
     const phase2    = this.hp <= this.maxHp * 0.5;
-    const fireRate  = phase2 ? 30 : 120;
+    const fireRate  = phase2 ? 55 : 120;
     const shotSpd   = (phase2 ? 5.5 : 4.5) * s;
     this.fireTimer++;
     if (this.fireTimer >= fireRate && !this.dead) {
@@ -305,8 +313,9 @@ class MidbossClam {
       ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
       ctx.restore();
     }
-    drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
-      { wRatio: 0.175, hRatio: 0.006, color: '#00e5ff' });
+    if (!this.dying)
+      drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
+        { wRatio: 0.175, hRatio: 0.006, color: '#00e5ff' });
     ctx.restore();
   }
 }
