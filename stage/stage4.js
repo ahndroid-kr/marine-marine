@@ -35,7 +35,7 @@ const bossMonkeyImgs   = {
 class EnemyHermitCrab {
   constructor(canvas) {
     this.canvas         = canvas;
-    this.hp             = 8;
+    this.hp             = 3;
     this.scoreValue     = 80;
     this.dead           = false;
     this.dying          = false;
@@ -88,7 +88,7 @@ class EnemyHermitCrab {
 class EnemyStarfish {
   constructor(canvas) {
     this.canvas         = canvas;
-    this.hp             = 6;
+    this.hp             = 2;
     this.scoreValue     = 70;
     this.dead           = false;
     this.dying          = false;
@@ -164,7 +164,7 @@ class EnemyStarfish {
 class EnemyJellyfish {
   constructor(canvas) {
     this.canvas         = canvas;
-    this.hp             = 12;
+    this.hp             = 3;
     this.scoreValue     = 100;
     this.dead           = false;
     this.dying          = false;
