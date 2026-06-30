@@ -707,13 +707,13 @@ class BossWitch {
     }
 
     // Fire patterns
-    // phase1: 마법탄 3발 직선 120f(2s), phase2: 나선형 180f(3s), phase3: 마법탄 120f
-    const fireRate = ap === 2 ? 180 : 120;
+    // phase1: 나선형 180f(3s), phase2: 마법탄 3발 직선 180f(3s), phase3: 마법탄 120f(2s)
+    const fireRate = ap === 3 ? 120 : 180;
     this.fireTimer++;
     if (this.fireTimer >= fireRate) {
       this.fireTimer = 0;
-      if (ap === 1) return this._magicShots3Way();
-      if (ap === 2) return this._spiralShots();
+      if (ap === 1) return this._spiralShots();
+      if (ap === 2) return this._magicShots3Way();
       return this._magicShots3Way();
     }
 
