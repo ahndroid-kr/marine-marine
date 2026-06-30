@@ -310,8 +310,8 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
 
   // ── Title logo image (floating) ───────────────────────────────────────────
   if (titleLogoImg.complete && titleLogoImg.naturalWidth > 0) {
-    const logoW     = Math.round(360 * s);
-    const logoH     = Math.round(240 * s);
+    const logoW     = Math.round(432 * s);
+    const logoH     = Math.round(288 * s);
     const logoBaseY = Math.round(canvas.height * 0.12);
     const floatY    = Math.sin(Date.now() / 1000 * (Math.PI * 2) / 2.5) * 6 * s;
     ctx.drawImage(titleLogoImg, cx - logoW / 2, logoBaseY + floatY, logoW, logoH);
@@ -328,7 +328,7 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
   const gap     = Math.round(canvas.width  * 0.04);
   const totalW  = stageLabels.length * btnW + (stageLabels.length - 1) * gap;
   const startX  = cx - totalW / 2;
-  const btnY    = Math.round(canvas.height * 0.60);
+  const btnY    = Math.round(canvas.height * 0.70);
 
   if (isQA) {
     ctx.font      = `${subSz}px 'Press Start 2P', monospace`;
