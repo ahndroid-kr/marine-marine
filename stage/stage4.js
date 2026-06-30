@@ -324,8 +324,8 @@ class MidbossClam {
 class BossMonkey {
   constructor(canvas) {
     this.canvas          = canvas;
-    this.maxHp           = 80;
-    this.hp              = 80;
+    this.maxHp           = 150;
+    this.hp              = 150;
     this.dead            = false;
     this.dying           = false;
     this.scoreValue      = 1500;
@@ -344,9 +344,9 @@ class BossMonkey {
     this.y     = canvas.height / 2;
   }
 
-  // 원본 256×205 → 2× 렌더: 512×410
-  get w() { return Math.round(this.canvas.height * 0.948); }
-  get h() { return Math.round(this.canvas.height * 0.759); }
+  // 원본 256×205 → 1.5× 렌더: 384×308
+  get w() { return Math.round(this.canvas.height * 0.711); }
+  get h() { return Math.round(this.canvas.height * 0.570); }
 
   get attackPhase() {
     const r = this.hp / this.maxHp;
