@@ -84,7 +84,7 @@ const stage3 = {
   },
 
   _spawnKrillGroup(canvas, enemies) {
-    const count   = 5 + Math.floor(Math.random() * 2);
+    const count   = 8 + Math.floor(Math.random() * 3);
     const uiH     = Math.round(canvas.height * 0.085);
     const sbH     = Math.round(canvas.height * 0.035);
     const lift    = Math.round(canvas.height * 0.080);

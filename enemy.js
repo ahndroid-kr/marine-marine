@@ -477,7 +477,7 @@ class EnemyBlackSmoker {
     const lift = Math.round(canvas.height * 0.080);
     this.x = canvas.width + this.w;
     this.y = canvas.height - sbH - this.h / 2 - lift;
-    this.vx = -(0.5 + Math.random() * 0.4) * s;
+    this.vx = -(GS.scrollSpeed * 0.45 * s);
     this.hitFlash      = 0;
     this.fireTimer     = Math.floor(Math.random() * 90);
     this.burstRemaining = 0;
@@ -536,7 +536,7 @@ class EnemyBlackSmoker {
 class EnemyKrill {
   constructor(canvas, yPos) {
     this.canvas = canvas;
-    this.hp = 2;
+    this.hp = 1;
     this.scoreValue = 50;
     this.dead = false;
     this.dying = false;
