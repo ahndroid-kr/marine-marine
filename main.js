@@ -482,7 +482,7 @@ function update() {
   for (const e of enemies) {
     const shots = e.update(player);
     if (shots) {
-      const isBoss = e instanceof BossPuffer || e instanceof BossShark || e instanceof BossWitch || e instanceof MidbossSunfish;
+      const isBoss = e instanceof BossPuffer || e instanceof BossShark || e instanceof BossWitch || e instanceof MidbossSunfish || e instanceof MidbossClam;
       for (const s of shots) {
         const opts = {};
         if (s.img)       { opts.img = s.img; opts.w = s.bw; opts.h = s.bh; }
