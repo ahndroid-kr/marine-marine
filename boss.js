@@ -468,6 +468,7 @@ class MidbossTurtle {
 // ─── Stage 3 images ───────────────────────────────────────────────────────────
 const midbossSunfishImg = _loadImg('assets/images/midboss_sunfish.png');
 const effectWitchImg    = _loadImg('assets/images/effect_witch.png');
+const effectThunderImg  = _loadImg('assets/images/effect_thunder.png');
 
 const bossWitchImgs = {
   1:    _loadImg('assets/images/boss_witch_1.png'),
@@ -602,6 +603,9 @@ class BossWitch {
     this._spiralAngle    = 0;
     this._effectToggle   = false;
     this._effectTimer    = 0;
+    this._windupActive   = false;
+    this._windupTimer    = 0;
+    this._thunderEffects = [];
     this.vx              = -3 * canvas.height / 600;
     this.arrived         = false;
     this._giantDmgTimer  = 0;
@@ -691,14 +695,27 @@ class BossWitch {
 
     const restX  = this.canvas.width * 0.70;
     const margin = this.h / 2 + 10;
-    if (!this.arrived) {
-      this.x += this.vx;
-      if (this.x <= restX) { this.x = restX; this.arrived = true; }
-    } else {
-      this.x = Math.max(this.w / 2 + 20, restX + Math.sin(this.t * 0.9) * (this.canvas.width * 0.02));
+
+    // Phase 2 thunder effect tick; clear windup if phase changed away from 2
+    if (ap === 2) {
+      this._thunderEffects = this._thunderEffects.filter(e => --e.timer > 0);
+    } else if (this._windupActive) {
+      this._windupActive   = false;
+      this._windupTimer    = 0;
+      this._thunderEffects = [];
     }
-    this.y += Math.sin(this.t * 0.8) * 1.0 * s;
-    this.y  = Math.max(uiH + margin, Math.min(this.canvas.height - margin, this.y));
+
+    // Movement — frozen during phase 2 windup for tension buildup
+    if (!this._windupActive) {
+      if (!this.arrived) {
+        this.x += this.vx;
+        if (this.x <= restX) { this.x = restX; this.arrived = true; }
+      } else {
+        this.x = Math.max(this.w / 2 + 20, restX + Math.sin(this.t * 0.9) * (this.canvas.width * 0.02));
+      }
+      this.y += Math.sin(this.t * 0.8) * 1.0 * s;
+      this.y  = Math.max(uiH + margin, Math.min(this.canvas.height - margin, this.y));
+    }
 
     // Phase 3 effect overlay toggle (cosmetic)
     if (ap === 3) {
@@ -706,14 +723,41 @@ class BossWitch {
       if (this._effectTimer >= 20) { this._effectTimer = 0; this._effectToggle = !this._effectToggle; }
     }
 
-    // Fire patterns
-    // phase1: 나선형 180f(3s), phase2: 마법탄 3발 직선 180f(3s), phase3: 마법탄 120f(2s)
+    // Phase 2: windup state machine — thunder flashes left→right×2 before each attack
+    if (ap === 2) {
+      if (this._windupActive) {
+        this._windupTimer++;
+        // Spawn one thunder effect at the start of each 13-frame step (4 steps total)
+        const step = Math.floor((this._windupTimer - 1) / 13);
+        if ((this._windupTimer - 1) % 13 === 0 && step < 4) {
+          const offsetX = (step % 2 === 0 ? -1 : 1) * Math.round((30 + Math.random() * 10) * s);
+          const offsetY = Math.round((Math.random() * 20 - 10) * s);
+          this._thunderEffects.push({ offsetX, offsetY, timer: 9 });
+        }
+        // Windup complete (≈0.9s): fire and resume movement
+        if (this._windupTimer >= 54) {
+          this._windupActive   = false;
+          this._windupTimer    = 0;
+          this._thunderEffects = [];
+          return this._magicShots3Way();
+        }
+        return null;
+      }
+      this.fireTimer++;
+      if (this.fireTimer >= 180) {
+        this.fireTimer     = 0;
+        this._windupActive = true;
+        this._windupTimer  = 0;
+      }
+      return null;
+    }
+
+    // Phase 1 & 3 fire patterns
     const fireRate = ap === 3 ? 120 : 180;
     this.fireTimer++;
     if (this.fireTimer >= fireRate) {
       this.fireTimer = 0;
       if (ap === 1) return this._spiralShots();
-      if (ap === 2) return this._magicShots3Way();
       return this._magicShots3Way();
     }
 
@@ -757,6 +801,18 @@ class BossWitch {
       const eH = Math.round(this.canvas.height * 0.125);
       ctx.globalAlpha = 0.85;
       ctx.drawImage(effectWitchImg, -hw - eW * 0.2, -hh - eH * 0.3, eW, eH);
+      ctx.globalAlpha = 1;
+    }
+
+    // Phase 2 windup: thunder flash effects near the witch's head
+    if (this.attackPhase === 2 && this._thunderEffects.length > 0
+        && effectThunderImg.complete && effectThunderImg.naturalWidth > 0) {
+      const tSz   = Math.round(this.canvas.height * 0.080);
+      const headY = -hh * 0.55;
+      ctx.globalAlpha = 0.9;
+      for (const e of this._thunderEffects) {
+        ctx.drawImage(effectThunderImg, e.offsetX - tSz / 2, headY + e.offsetY - tSz / 2, tSz, tSz);
+      }
       ctx.globalAlpha = 1;
     }
 

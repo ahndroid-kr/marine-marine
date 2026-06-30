@@ -1,4 +1,4 @@
-const CACHE = 'marine-marine-v11';
+const CACHE = 'marine-marine-v12';
 
 const PRECACHE = [
   './',
@@ -75,6 +75,7 @@ const PRECACHE = [
   './assets/images/effect_boss_hit.png',
   './assets/images/effect_angry.png',
   './assets/images/effect_witch.png',
+  './assets/images/effect_thunder.png',
 ];
 
 self.addEventListener('install', e => {
