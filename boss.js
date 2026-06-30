@@ -173,8 +173,8 @@ class BossPuffer {
     this.canvas    = canvas;
     this.x         = canvas.width + 130;
     this.y         = canvas.height / 2;
-    this.maxHp     = 80;
-    this.hp        = 80;
+    this.maxHp     = 100;
+    this.hp        = 100;
     this.phase     = 1;  // sprite phase: 1 or 2
     this.dead      = false;
     this.dying     = false;
@@ -588,8 +588,8 @@ class BossWitch {
     this.canvas          = canvas;
     this.x               = canvas.width + 310;
     this.y               = canvas.height / 2;
-    this.maxHp           = 300;
-    this.hp              = 300;
+    this.maxHp           = 250;
+    this.hp              = 250;
     this.dead            = false;
     this.dying           = false;
     this.scoreValue      = 3000;
@@ -875,8 +875,8 @@ class BossShark {
     this.canvas        = canvas;
     this.x             = canvas.width + 200;
     this.y             = canvas.height / 2;
-    this.maxHp         = 300;
-    this.hp            = 300;
+    this.maxHp         = 200;
+    this.hp            = 200;
     this.dead          = false;
     this.dying         = false;
     this.scoreValue    = 15000;

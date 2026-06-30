@@ -324,8 +324,8 @@ class MidbossClam {
 class BossMonkey {
   constructor(canvas) {
     this.canvas          = canvas;
-    this.maxHp           = 150;
-    this.hp              = 150;
+    this.maxHp           = 300;
+    this.hp              = 300;
     this.dead            = false;
     this.dying           = false;
     this.scoreValue      = 1500;
