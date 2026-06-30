@@ -484,8 +484,8 @@ class EnemyBlackSmoker {
     this.burstTimer     = 0;
   }
 
-  get w() { return Math.round(this.canvas.height * 0.160); }
-  get h() { return Math.round(this.canvas.height * 0.160); }
+  get w() { return Math.round(this.canvas.height * 0.320); }
+  get h() { return Math.round(this.canvas.height * 0.320); }
 
   onHit() { this.hitFlash = 4; }
 

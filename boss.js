@@ -808,7 +808,7 @@ class BossWitch {
     if (this.attackPhase === 2 && this._thunderEffects.length > 0
         && effectThunderImg.complete && effectThunderImg.naturalWidth > 0) {
       const tSz   = Math.round(this.canvas.height * 0.080);
-      const headY = -hh * 0.65;
+      const headY = -hh * 0.78;
       ctx.globalAlpha = 0.9;
       for (const e of this._thunderEffects) {
         ctx.drawImage(effectThunderImg, e.offsetX - tSz / 2, headY + e.offsetY - tSz / 2, tSz, tSz);
