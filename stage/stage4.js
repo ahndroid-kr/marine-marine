@@ -66,8 +66,8 @@ class EnemyHermitCrab {
       const dx   = player.x - this.x;
       const dy   = player.y - this.y;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-      const bW   = Math.round(this.canvas.height * 0.052);
-      const bH   = Math.round(this.canvas.height * 0.044);
+      const bW   = Math.round(this.canvas.height * 0.078);  // 42/540
+      const bH   = Math.round(this.canvas.height * 0.067);  // 36/540
       return [{ x: this.x, y: this.y, vx: spd * dx / dist, vy: spd * dy / dist, img: bulletCrabImg, bw: bW, bh: bH }];
     }
     return null;
@@ -84,7 +84,7 @@ class EnemyHermitCrab {
   }
 }
 
-// ─── EnemyStarfish: 상단 2/3, 빠른 스텝형 이동 ───────────────────────────────
+// ─── EnemyStarfish: 상단 1/3, 점멸 텔레포트 이동 ────────────────────────────
 class EnemyStarfish {
   constructor(canvas) {
     this.canvas         = canvas;
@@ -95,15 +95,17 @@ class EnemyStarfish {
     this._giantDmgTimer = 0;
     const s    = canvas.height / 600;
     const uiH  = Math.round(canvas.height * 0.085);
-    const maxY = Math.round(canvas.height * 0.65) - this.h / 2;
+    const maxY = Math.round(canvas.height * 0.33) - this.h / 2;  // 상단 1/3
     this.x     = canvas.width + this.w + Math.random() * 40;
     this.y     = uiH + this.h / 2 + Math.random() * Math.max(0, maxY - uiH - this.h / 2);
-    this._spd       = (5.5 + Math.random() * 1.0) * s;
-    this.hitFlash   = 0;
-    this._stepTimer = 0;
-    this._stepping  = true;
-    this._stepLen   = 12;   // 이동 지속 프레임
-    this._pauseLen  = 8;    // 정지 프레임
+    this._spd          = (5.5 + Math.random() * 1.0) * s;
+    this.hitFlash      = 0;
+    this._alpha        = 1;
+    this._phase        = 'visible';  // 'visible' | 'fadeout' | 'fadein'
+    this._phaseTimer   = 0;
+    this._visibleDur   = 20 + Math.floor(Math.random() * 16);  // 20~35f
+    this._fadeDur      = 6;
+    this._teleportDist = 0;
   }
 
   get w() { return Math.round(this.canvas.height * 0.133); }
@@ -112,22 +114,45 @@ class EnemyStarfish {
   onHit() { this.hitFlash = 4; }
 
   update() {
-    this._stepTimer++;
-    if (this._stepping) {
-      this.x -= this._spd;
-      if (this._stepTimer >= this._stepLen) { this._stepping = false; this._stepTimer = 0; }
-    } else {
-      if (this._stepTimer >= this._pauseLen) { this._stepping = true;  this._stepTimer = 0; }
-    }
-    if (this.x < -(this.w + 20)) { this.dead = true; return null; }
+    this._phaseTimer++;
     if (this.hitFlash > 0) this.hitFlash--;
+
+    if (this._phase === 'visible') {
+      this._alpha = 1;
+      if (this._phaseTimer >= this._visibleDur) {
+        // 사이클 전체 시간(정지+페이드)만큼 이동한 것처럼 텔레포트 거리 계산
+        this._teleportDist = this._spd * (this._visibleDur + this._fadeDur * 2);
+        this._phase      = 'fadeout';
+        this._phaseTimer = 0;
+      }
+    } else if (this._phase === 'fadeout') {
+      this._alpha = 1 - this._phaseTimer / this._fadeDur;
+      if (this._phaseTimer >= this._fadeDur) {
+        this.x          -= this._teleportDist;  // 즉시 왼쪽으로 텔레포트
+        this._phase      = 'fadein';
+        this._phaseTimer = 0;
+      }
+    } else {
+      // fadein
+      this._alpha = this._phaseTimer / this._fadeDur;
+      if (this._phaseTimer >= this._fadeDur) {
+        this._alpha      = 1;
+        this._phase      = 'visible';
+        this._phaseTimer = 0;
+        this._visibleDur = 20 + Math.floor(Math.random() * 16);
+      }
+    }
+
+    if (this.x < -(this.w + 20)) { this.dead = true; return null; }
     return null;
   }
 
   draw(ctx) {
     ctx.save();
     ctx.translate(this.x, this.y);
-    if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
+    let alpha = Math.max(0, Math.min(1, this._alpha));
+    if (this.hitFlash > 0) alpha *= (this.hitFlash % 2 === 0 ? 0.3 : 1.0);
+    ctx.globalAlpha = alpha;
     const img = enemyStage4Imgs.starfish;
     if (img && img.complete && img.naturalWidth > 0)
       ctx.drawImage(img, -this.w / 2, -this.h / 2, this.w, this.h);
