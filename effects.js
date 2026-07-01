@@ -1,6 +1,7 @@
 // ─── Death particle pool ──────────────────────────────────────────────────────
-const _particles = [];
-const _COLORS    = ['#7ddeff', '#b8eeff', '#ffffff', '#50c8ff', '#daf5ff', '#a0f0ff'];
+const _particles   = [];
+const _COLORS      = ['#7ddeff', '#b8eeff', '#ffffff', '#50c8ff', '#daf5ff', '#a0f0ff'];
+const _CLAM_COLORS = ['#ffffff', '#7ddeff', '#b8eeff', '#ffd700', '#ffe066', '#50c8ff', '#daf5ff'];
 
 function spawnDeathParticles(x, y, count) {
   const n = count !== undefined ? count : (8 + Math.floor(Math.random() * 5));
@@ -73,10 +74,29 @@ function updateShake() {
 
 function getShakeOffset() { return { x: _shakeX, y: _shakeY }; }
 
+// ─── MidbossClam 전용 폭발 파티클 ────────────────────────────────────────────
+function spawnClamDeathExplosion(x, y) {
+  const count = 15 + Math.floor(Math.random() * 6);  // 15~20개
+  for (let i = 0; i < count; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const spd   = 2.5 + Math.random() * 5.0;
+    const r     = 4 + Math.random() * 6;               // 반지름 4~10 (기본보다 큼)
+    const life  = 36 + Math.floor(Math.random() * 14); // 36~50프레임 = 600~833ms
+    _particles.push({
+      x, y,
+      vx: Math.cos(angle) * spd,
+      vy: Math.sin(angle) * spd,
+      r, life,
+      maxLife: life,
+      color: _CLAM_COLORS[Math.floor(Math.random() * _CLAM_COLORS.length)],
+    });
+  }
+}
+
 // ─── Helper: trigger appropriate FX based on enemy type ───────────────────────
 function enemyDeathFX(e) {
   const isFinalBoss = e instanceof BossPuffer || e instanceof BossShark;
-  const isMidBoss   = e instanceof MidbossRay  || e instanceof MidbossTurtle;
+  const isMidBoss   = e instanceof MidbossRay  || e instanceof MidbossTurtle || e instanceof MidbossClam;
   if (isFinalBoss) {
     spawnDeathParticles(e.x, e.y, 22);
     triggerShake(10, 30);

@@ -280,14 +280,15 @@ class MidbossClam {
   onDeath() {
     this.dying     = true;
     this.deadTimer = 0;
-    triggerShake(6, 10);  // 강도 6, 10f (~167ms)
+    spawnClamDeathExplosion(this.x, this.y);
+    triggerShake(8, 20);
   }
 
   update() {
-    // 사망 연출: 18f 페이드아웃 후 dead = true → main.js 필터에서 지연 드롭 방출
+    // 사망 연출: 45f(~750ms) 후 dead = true → 파티클 폭발 종료 후 드롭 방출
     if (this.dying) {
       this.deadTimer++;
-      if (this.deadTimer >= 18) this.dead = true;
+      if (this.deadTimer >= 45) this.dead = true;
       return null;
     }
 
@@ -327,19 +328,6 @@ class MidbossClam {
     ctx.translate(this.x, this.y);
 
     if (this.dying) {
-      const t     = Math.min(1, this.deadTimer / 18);
-      const scale = 1 + t * 0.15;          // 1.0 → 1.15
-      const alpha = Math.max(0, 1 - t);    // 1.0 → 0.0
-      ctx.scale(scale, scale);
-      ctx.globalAlpha = alpha;
-      if (midbossClamImg.complete && midbossClamImg.naturalWidth > 0)
-        ctx.drawImage(midbossClamImg, -hw, -hh, this.w, this.h);
-      // 초기 1~2f 흰색 플래시 오버레이
-      if (this.deadTimer <= 2) {
-        ctx.globalAlpha = 0.85;
-        ctx.fillStyle   = '#ffffff';
-        ctx.fillRect(-hw, -hh, this.w, this.h);
-      }
       ctx.restore();
       return;
     }
