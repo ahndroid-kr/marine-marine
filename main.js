@@ -313,10 +313,10 @@ function startStage(num) {
 }
 
 // ─── Stage transition timing ──────────────────────────────────────────────────
-const LAST_STAGE     = STAGE_DEFS[STAGE_DEFS.length - 1].stageObj;
+const LAST_STAGE     = STAGE_DEFS[3].stageObj;  // stage4 = 현재 최종 콘텐츠 스테이지
 const COLLECT_FRAMES = 180;   // 3s item collection
-const FADEOUT_FRAMES = 75;    // 1.25s fade to black
-const HOLD_FRAMES    = 45;    // 0.75s full black (next stage prepped at midpoint)
+const FADEOUT_FRAMES = 90;    // 1.5s fade to black (with auto-advance rush effect)
+const HOLD_FRAMES    = 60;    // 1s full black (next stage prepped at midpoint)
 const FADEIN_FRAMES  = 75;    // 1.25s fade from black
 const PREP_FRAME     = COLLECT_FRAMES + FADEOUT_FRAMES + Math.floor(HOLD_FRAMES / 2);
 const DONE_FRAME     = COLLECT_FRAMES + FADEOUT_FRAMES + HOLD_FRAMES + FADEIN_FRAMES;
@@ -324,6 +324,7 @@ const DONE_FRAME     = COLLECT_FRAMES + FADEOUT_FRAMES + HOLD_FRAMES + FADEIN_FR
 let _nextStageLabel    = '';    // "STAGE 2" shown during blackout
 let _nextStagePrepped  = false;
 let _clearIsLastStage  = false; // cached at stageclear start; stays correct after _prepNextStage() swaps currentStage
+let _gameClearBtnBounds = [];   // RESTART button bounds for game clear screen
 
 function _prepNextStage() {
   const idx = STAGE_DEFS.findIndex(d => d.stageObj === currentStage);
@@ -362,7 +363,12 @@ function update() {
   }
   if (GS.phase === 'stageclear') {
     GS.clearTimer++;
-    GS.scrollX += GS.scrollSpeed;
+    const t = GS.clearTimer;
+
+    // Fadeout 구간: 배경 고속 스크롤 (앞으로 돌진 효과)
+    const _inFadeout = t > COLLECT_FRAMES && t <= COLLECT_FRAMES + FADEOUT_FRAMES;
+    GS.scrollX += GS.scrollSpeed * (_inFadeout ? 1 + 4 * ((t - COLLECT_FRAMES) / FADEOUT_FRAMES) : 1);
+
     updateBg();
     updatePlants();
     updateDecos(canvas);
@@ -372,38 +378,42 @@ function update() {
       currentStage.updateBackground(canvas);
     }
 
-    const t = GS.clearTimer;
-
-    // Cache isLast at the very first frame of stageclear so it stays stable
-    // even after _prepNextStage() replaces currentStage with the next (possibly LAST) stage.
     if (t === 1) _clearIsLastStage = (currentStage === LAST_STAGE);
     const isLast = _clearIsLastStage;
 
     if (isLast) {
-      // Last stage: just let player collect, tap to continue
-      const ks = Math.round(canvas.height * 0.009);
-      if (keys['ArrowUp']    || keys['w'] || keys['W']) player.targetY -= ks;
-      if (keys['ArrowDown']  || keys['s'] || keys['S']) player.targetY += ks;
-      if (keys['ArrowLeft']  || keys['a'] || keys['A']) player.targetX -= ks;
-      if (keys['ArrowRight'] || keys['d'] || keys['D']) player.targetX += ks;
-      player.update();
-      for (const item of items) item.update();
-      for (const item of items) {
-        if (item.dead) continue;
-        if (overlap(item, player)) { item.dead = true; applyItem(item.type, player.x, player.y); }
+      if (t <= COLLECT_FRAMES) {
+        // 아이템 수거 구간: 플레이어 자유 조작
+        GS.invincible = Math.max(GS.invincible, 2);
+        const ks = Math.round(canvas.height * 0.009);
+        if (keys['ArrowUp']    || keys['w'] || keys['W']) player.targetY -= ks;
+        if (keys['ArrowDown']  || keys['s'] || keys['S']) player.targetY += ks;
+        if (keys['ArrowLeft']  || keys['a'] || keys['A']) player.targetX -= ks;
+        if (keys['ArrowRight'] || keys['d'] || keys['D']) player.targetX += ks;
+        player.update();
+        for (const item of items) item.update();
+        for (const item of items) {
+          if (item.dead) continue;
+          if (overlap(item, player)) { item.dead = true; applyItem(item.type, player.x, player.y); }
+        }
+        items = items.filter(item => !item.dead);
+      } else if (_inFadeout) {
+        // 페이드아웃 구간: 플레이어 자동 전진
+        player.targetX = Math.min(GAME_W * 0.95, player.targetX + 8);
+        player.update();
       }
-      items = items.filter(item => !item.dead);
+      // 암전 이후: 게임 클리어 화면 대기 (RESTART 버튼 클릭 처리)
       return;
     }
 
-    // Non-last: collect phase — player active, invincible, no hit
+    // 非 라스트 스테이지: 첫 프레임에 다음 스테이지 레이블 준비
     if (t === 1) {
       const idx = STAGE_DEFS.findIndex(d => d.stageObj === currentStage);
       _nextStageLabel   = idx >= 0 && idx + 1 < STAGE_DEFS.length ? STAGE_DEFS[idx + 1].label : '';
       _nextStagePrepped = false;
     }
     if (t <= COLLECT_FRAMES) {
-      GS.invincible = Math.max(GS.invincible, 2); // keep invincible during collect
+      GS.invincible = Math.max(GS.invincible, 2);
       const ks = Math.round(canvas.height * 0.009);
       if (keys['ArrowUp']    || keys['w'] || keys['W']) player.targetY -= ks;
       if (keys['ArrowDown']  || keys['s'] || keys['S']) player.targetY += ks;
@@ -416,15 +426,15 @@ function update() {
         if (overlap(item, player)) { item.dead = true; applyItem(item.type, player.x, player.y); }
       }
       items = items.filter(item => !item.dead);
+    } else if (_inFadeout) {
+      player.targetX = Math.min(GAME_W * 0.95, player.targetX + 8);
+      player.update();
     }
 
-    // Mid-blackout: quietly initialize next stage content
     if (t === PREP_FRAME && !_nextStagePrepped) {
       _nextStagePrepped = true;
       _prepNextStage();
     }
-
-    // Full transition complete → start playing
     if (t >= DONE_FRAME) {
       GS.phase      = 'playing';
       GS.clearTimer = 0;
@@ -684,8 +694,10 @@ function draw() {
   // UI and overlays — no shake
   drawUI(ctx, canvas);
   currentStage.draw(ctx, canvas);
-  if (GS.phase === 'stageclear' && _clearIsLastStage)  drawStageClear(ctx, canvas, true);
-  if (GS.phase === 'stageclear' && !_clearIsLastStage) _drawTransitionOverlay();
+  if (GS.phase === 'stageclear') {
+    if (_clearIsLastStage) _drawGameClearOverlay();
+    else _drawTransitionOverlay();
+  }
   if (GS.phase === 'gameover')   drawGameOver(ctx, canvas);
   if (paused && GS.phase === 'playing') drawPaused(ctx, canvas);
 }
@@ -730,6 +742,27 @@ function _drawTransitionOverlay() {
     }
   }
   ctx.restore();
+}
+
+// ─── Game clear overlay (마지막 스테이지: 페이드 → 게임 클리어 화면) ──────────
+function _drawGameClearOverlay() {
+  const t    = GS.clearTimer;
+  const fo   = COLLECT_FRAMES;
+  const foEnd = fo + FADEOUT_FRAMES;
+
+  if (t <= fo) return;
+
+  if (t <= foEnd) {
+    const alpha = (t - fo) / FADEOUT_FRAMES;
+    ctx.save();
+    ctx.globalAlpha = Math.min(1, alpha);
+    ctx.fillStyle   = '#000';
+    ctx.fillRect(0, 0, GAME_W, GAME_H);
+    ctx.restore();
+    return;
+  }
+
+  drawGameClear(ctx, canvas, _gameClearBtnBounds);
 }
 
 // ─── Loop ─────────────────────────────────────────────────────────────────────
@@ -784,8 +817,11 @@ canvas.addEventListener('touchstart', e => {
   if (handlePauseOrRestart(px, py)) return;
   if (paused) return;
   if (GS.phase === 'gameover') { handleClearOrGameover(); return; }
-  if (GS.phase === 'stageclear' && currentStage === LAST_STAGE) { handleClearOrGameover(); return; }
-  if (GS.phase === 'stageclear') return; // mid-transition, ignore taps
+  if (GS.phase === 'stageclear' && _clearIsLastStage) {
+    for (const b of _gameClearBtnBounds) { if (inRect(px, py, b)) { init(); return; } }
+    return;
+  }
+  if (GS.phase === 'stageclear') return;
 }, { passive: false });
 
 canvas.addEventListener('touchmove', e => {
@@ -812,8 +848,11 @@ canvas.addEventListener('mousedown', e => {
   if (handlePauseOrRestart(px, py)) return;
   if (paused) return;
   if (GS.phase === 'gameover') { handleClearOrGameover(); return; }
-  if (GS.phase === 'stageclear' && currentStage === LAST_STAGE) { handleClearOrGameover(); return; }
-  if (GS.phase === 'stageclear') return; // mid-transition, ignore taps
+  if (GS.phase === 'stageclear' && _clearIsLastStage) {
+    for (const b of _gameClearBtnBounds) { if (inRect(px, py, b)) { init(); return; } }
+    return;
+  }
+  if (GS.phase === 'stageclear') return;
 });
 canvas.addEventListener('mousemove', e => {
   if (mouseDown && GS.phase === 'playing' && !paused && player) {

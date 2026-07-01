@@ -358,6 +358,74 @@ function drawTitle(ctx, canvas, stageLabels, btnBoundsArr) {
   ctx.restore();
 }
 
+// ─── Game clear ───────────────────────────────────────────────────────────────
+function drawGameClear(ctx, canvas, btnBoundsArr) {
+  btnBoundsArr.length = 0;
+
+  const cw = canvas.width, ch = canvas.height;
+  const cx = cw / 2;
+
+  ctx.save();
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0, 0, cw, ch);
+
+  ctx.textAlign    = 'center';
+  ctx.textBaseline = 'middle';
+
+  // ── GAME CLEAR ──────────────────────────────────────────────────────────────
+  const titleSz = Math.round(ch * 0.072);
+  ctx.font        = `${titleSz}px 'Press Start 2P', monospace`;
+  ctx.fillStyle   = '#ffe066';
+  ctx.shadowColor = '#ffcc00';
+  ctx.shadowBlur  = 40;
+  ctx.fillText('GAME CLEAR', cx, Math.round(ch * 0.20));
+  ctx.shadowBlur  = 0;
+
+  // ── Score ──────────────────────────────────────────────────────────────────
+  const scoreSz = Math.round(ch * 0.026);
+  ctx.font      = `${scoreSz}px 'Press Start 2P', monospace`;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText(`SCORE  ${GS.score}`, cx, Math.round(ch * 0.35));
+
+  // ── Ranking placeholder ────────────────────────────────────────────────────
+  const rankW = Math.round(cw * 0.58);
+  const rankH = Math.round(ch * 0.21);
+  const rankX = cx - rankW / 2;
+  const rankY = Math.round(ch * 0.43);
+  ctx.strokeStyle = 'rgba(255,255,255,0.18)';
+  ctx.lineWidth   = 1;
+  ctx.strokeRect(rankX, rankY, rankW, rankH);
+  const rankSz = Math.round(ch * 0.013);
+  ctx.font      = `${rankSz}px 'Press Start 2P', monospace`;
+  ctx.fillStyle = 'rgba(255,255,255,0.28)';
+  ctx.fillText('RANKING  COMING  SOON', cx, rankY + rankH / 2);
+
+  // ── RESTART button ─────────────────────────────────────────────────────────
+  const btnW = Math.round(cw * 0.28);
+  const btnH = Math.round(ch * 0.072);
+  const btnX = cx - btnW / 2;
+  const btnY = Math.round(ch * 0.72);
+
+  ctx.fillStyle   = 'rgba(0, 229, 255, 0.10)';
+  ctx.strokeStyle = '#00e5ff';
+  ctx.lineWidth   = 2;
+  ctx.shadowColor = '#00e5ff';
+  ctx.shadowBlur  = 18;
+  roundRect(ctx, btnX, btnY, btnW, btnH, 6);
+  ctx.fill();
+  ctx.stroke();
+  ctx.shadowBlur  = 0;
+
+  const btnSz = Math.round(ch * 0.020);
+  ctx.font      = `${btnSz}px 'Press Start 2P', monospace`;
+  ctx.fillStyle = '#00e5ff';
+  ctx.fillText('RESTART', cx, btnY + btnH / 2);
+
+  btnBoundsArr.push({ x: btnX, y: btnY, w: btnW, h: btnH });
+
+  ctx.restore();
+}
+
 // ─── Game over ────────────────────────────────────────────────────────────────
 function drawGameOver(ctx, canvas) {
   ctx.save();
