@@ -95,7 +95,7 @@ function spawnClamDeathExplosion(x, y) {
 
 // ─── Helper: trigger appropriate FX based on enemy type ───────────────────────
 function enemyDeathFX(e) {
-  const isFinalBoss = e instanceof BossPuffer || e instanceof BossShark;
+  const isFinalBoss = e instanceof BossPuffer || e instanceof BossShark || e instanceof BossMonkey;
   const isMidBoss   = e instanceof MidbossRay  || e instanceof MidbossTurtle || e instanceof MidbossClam;
   if (isFinalBoss) {
     spawnDeathParticles(e.x, e.y, 22);

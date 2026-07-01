@@ -396,7 +396,7 @@ class BossMonkey {
     this.hitEffects.push({ x: Math.cos(angle) * dist, y: Math.sin(angle) * dist, timer: 14 });
   }
 
-  onDeath() { this.dying = true; this.deadTimer = 0; }
+  onDeath() { this.dying = true; this.deadTimer = 0; this.hitFlash = 0; }
 
   getDrops() {
     const sp    = this.w * 0.30;
@@ -502,6 +502,16 @@ class BossMonkey {
     const hw = this.w / 2, hh = this.h / 2;
     ctx.save();
     ctx.translate(this.x, this.y);
+
+    if (this.dying) {
+      ctx.globalAlpha = Math.max(0, 1 - this.deadTimer / 150);
+      const dImg = this.currentImg;
+      if (dImg && dImg.complete && dImg.naturalWidth > 0)
+        ctx.drawImage(dImg, -hw, -hh, this.w, this.h);
+      ctx.restore();
+      return;
+    }
+
     if (this.hitFlash > 0) ctx.globalAlpha = this.hitFlash % 2 === 0 ? 0.3 : 1.0;
     const img = this.currentImg;
     if (img && img.complete && img.naturalWidth > 0)
@@ -513,9 +523,8 @@ class BossMonkey {
       ctx.drawImage(effectBossHitImg, e.x - 48, e.y - 48, 96, 96);
       ctx.restore();
     }
-    if (!this.dying)
-      drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
-        { color: '#FFD700' });
+    drawBossHpBar(ctx, this.w, this.canvas.height, hh, this.hp, this.maxHp,
+      { color: '#FFD700' });
     ctx.restore();
   }
 }
